@@ -15,7 +15,7 @@
       "date": "2025-03-30",
       "description": "Мониторинг всех ключевых показателей проектов для руководителей. Объединяет на едином экране данные из баз специализированных программ: StroyBot, Primavera, 1C, базы управленческого учета, Excel.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
-      "detailUrl": "projects/project_monitor.html"
+      "detailUrl": "./projects/project_monitor.html"
     },
     {
       "id": "Gantt_chart",
@@ -25,7 +25,7 @@
       "date": "2025-03-01",
       "description": "Выявление слабых мест в выполнении месячно-суточного графика проекта: где отстаем, насколько, кто исполнитель, сколько выполнено по каждой стадии проекта.",
       "metrics": { "Revenue tracked": "$12M", "Reporting time saved": "65%" },
-      "detailUrl": "projects/Gantt_chart.html"
+      "detailUrl": "./projects/Gantt_chart.html"
     },
 
       {
@@ -36,7 +36,7 @@
       "date": "2026-06-30",
       "description": "Прогноз кассовых разрывов на основе платежного календаря 1С с версионностью по сценариям, изменению начального остатка и горизонта планирования.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
-      "detailUrl": "projects/cash_gap2.html"
+      "detailUrl": "./projects/cash_gap2.html"
     },
 
         {
@@ -47,7 +47,7 @@
       "date": "2025-04-15",
       "description": "Ранжированный по числу направленных предложений о закупке перечень подрядчиков, которые ни разу не выигрывали в закупочных процедурах.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
-      "detailUrl": "projects/supply_proposal.html"
+      "detailUrl": "./projects/supply_proposal.html"
     },
       {
       "id": "risks-model",
@@ -57,7 +57,7 @@
       "date": "2025-08-31",
       "description": "Данные электронной торговой площадки, полученные через API, с добавленными к каждой процедуре фильтрами по основным рискам.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
-      "detailUrl": "projects/ETP_risks.html"
+      "detailUrl": "./projects/ETP_risks.html"
     },
 
     {
@@ -68,7 +68,7 @@
       "date": "2025-04-15",
       "description": "Численность по категориям персонала за 6 месяцев. Категории имеют временную привязку к кадровой истории сотрудников.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
-      "detailUrl": "projects/hc_category.html"
+      "detailUrl": "./projects/hc_category.html"
     }
   ],
 
