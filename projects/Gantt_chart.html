@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project execution Gantt chart</title>
+  <link rel="stylesheet" href="Gantt_chart.css">
+</head>
+
+<body>
+
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-name">Мониторинг МСГ</span>
+        <span class="brand-role">BI</span>
+      </div>
+      <nav>
+        <a href="../index.html#projects">Projects</a>
+      </nav>
+    </div>
+  </header>
+
+
+  <main class="container" style="padding-top: 32px;">
+
+    <a href="../index.html#projects" class="back-link">&larr; Назад ко всем проектам</a>
+
+    <section class="detail-hero">
+      <h3>Диаграмма Ганта</h3>
+      <p class="detail-meta">Power BI &middot; SQL &middot; DAX &middot; SVG &middot; HTML &middot; март 2025</p>
+      <p class="detail-summary">
+        Отчет, отслеживающий отклонения от месячно-суточного графика (МСГ) с детализацией по видам работ, исполнителям и единицам измерения. Отчет помогает получить наглядное представление о ходе выполнения работ и проблемных местах с детальной информацией в натуральных единицах.
+        Данная страница - это упрощенная веб-версия отчета, построенного ранее в Power BI на базе данных, полученных из программы СтройБот через API.
+
+      </p>
+    </section>
+
+    <div class="kpi-grid" id="kpi-grid">
+      <!-- KPI cards injected by JS -->
+    </div>
+
+    <div class="gantt-filters">
+      <label>
+        Исполнитель:
+        <select id="executor-filter">
+          <option value="">Все исполнители</option>
+        </select>
+      </label>
+
+      <label>
+        Единица измерения:
+        <select id="unit-filter">
+          <option value="">Все единицы измерения</option>
+        </select>
+      </label>
+
+      <label>
+        Работа:
+        <input id="task-filter" type="search" placeholder="Поиск по работам:" autocomplete="off">
+      </label>
+
+      <button id="reset-gantt-filters" type="button">Сбросить фильтры</button>
+      <span id="gantt-filter-info"></span>
+
+    </div>
+
+    <section class="detail-chart-block">
+      <!-- <h3>Диаграмма Ганта</h3> -->
+      <p class="chart-note">прогресс проекта по неделям</p>
+      <div class="gantt-scroll">
+        <svg id="gantt-chart" viewBox="0 0 1000 800" width="100%" height="800" preserveAspectRatio="xMidYMid meet"
+          role="img" aria-label="Диаграмма Ганта">
+        </svg>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 &mdash; Built with HTML, CSS, SVG &amp; JavaScript.</p>
+    </div>
+  </footer>
+
+  <script src="Gantt_chart.js"></script>
+</body>
+
+</html>

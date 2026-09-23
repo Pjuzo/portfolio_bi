@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Монитор проектов</title>
+  <link rel="stylesheet" href="project_monitor.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-name">Монитор проектов</span>
+        <span class="brand-role">BI</span>
+      </div>
+      <nav>
+        <a href="../index.html#projects">Projects</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding-top: 32px;">
+    <a href="../index.html#projects" class="back-link">&larr; Назад ко всем проектам</a>
+    <section class="detail-hero">
+      <h3>Монитор проектов</h3>
+      <p class="detail-meta">Power BI &middot; SQL &middot; API &middot; Python &middot; DAX &middot; июнь 2026</p>
+      <p class="detail-summary">
+    Мониторинг всех ключевых показателей проектов для руководителей. Объединяет на едином экране данные из баз специализированных программ: StroyBot, Primavera, 1C, базы управленческого учета, Excel.
+      </p>
+    </section>
+    <!-- начало вставки -->
+    <div class="container_charts">
+      <div class="left-column">
+        <div class="chart">
+          <section class="detail-chart-block">
+            <h4 class="chart-label">Строительная готовность</h4>
+            <!-- <div id="chart-container"></div> -->
+            <svg id="completion-chart" viewBox="0 0 500 200" width="100%" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="construction completion">
+            </svg>
+          </section>
+        </div>
+        <div class="chart">
+          <section class="detail-chart-block">
+            <h4 class="chart-label">Сроки</h4>
+            <svg id="term-chart" viewBox="0 0 1000 400" width="100%" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="project term delays">
+            </svg>
+          </section>
+        </div>
+        <div class="chart">
+          <section class="detail-chart-block">
+            <h4 class="chart-label">Численность: План vs Факт</h4>
+            <svg id="headcount-chart" viewBox="0 0 800 300" width="100%" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="headcount plan vs fact">
+            </svg>
+          </section>
+        </div>
+      </div>
+      <div class="right-column">
+        <div class="chart chart-big">
+          <section class="detail-chart-block">
+            <h4 class="chart-label">Финансовый результат, тыс руб.</h4>
+            <svg id="cost-chart" viewBox="0 0 1000 400" width="100%" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="cost overrun vs forecast">
+            </svg>
+          </section>
+        </div>
+        <div class="chart chart-small">
+          <section class="detail-chart-block">
+            <h4 class="chart-label">Отчет по выполнению и актированию, тыс руб.</h4>
+            <svg id="act-chart" viewBox="0 0 800 200" width="100%" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="act plan execution">
+            </svg>
+          </section>
+        </div>
+      </div>
+    </div>
+    <!-- окончание вставки -->
+    <script src="project_monitor.js"></script>
+  </main>
+</body>
+</html>

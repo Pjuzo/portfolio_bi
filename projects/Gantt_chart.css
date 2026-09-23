@@ -1,0 +1,302 @@
+:root {
+    /* --bg: #cdcbd6; */
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --surface-2: #FFFFFF;
+    --border: #E2E6EB;
+    --color-border-strong: #CBD2DA;
+    --text: #101828;
+    --color-text-secondary: #475467;
+    --text-muted: #667085;
+    --accent: #0EA5A4;
+    --accent-2: #0B8483;
+    --radius: 10px;
+    --max-width: 2560px;
+    font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Arial", Roboto, Helvetica, sans-serif;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-header {
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+}
+
+.brand-name {
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.brand-role {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 0.9rem;
+}
+
+nav a:hover {
+    color: var(--accent);
+}
+
+/* ---------- Filters ---------- */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.filter-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.filter-btn.is-active {
+    background: var(--accent);
+    color: #06141f;
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.detail-hero {
+  width: 100%;
+  max-width: 100%;
+}
+
+.detail-hero h3 {
+    margin-bottom: 6px;
+    /* margin-left: 20px; */
+}
+
+.detail-hero .detail-meta {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.detail-hero .detail-summary {
+    max-width: 100vw;              
+  /* margin-left: calc(50% - 50vw + 20px);  
+  margin-right: calc(50% - 50vw + 20px); */
+    margin: auto;
+    padding: 26px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    text-wrap: balance;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 28px 0;
+}
+
+.kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+}
+
+.kpi-card .kpi-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-2);
+    display: block;
+}
+
+.kpi-card .kpi-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.detail-chart-block {
+    margin-bottom: 40px;
+}
+
+.detail-chart-block h2 {
+    margin-bottom: 4px;
+}
+
+.detail-chart-block .chart-note {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+}
+
+.gantt-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 12px;
+    font: 14px Arial, sans-serif;
+}
+
+.gantt-filters label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gantt-filters select,
+.gantt-filters input,
+.gantt-filters button {
+    padding: 6px 8px;
+    border: 1px solid #667085;
+    border-radius: 4px;
+}
+
+#gantt-filter-info {
+    color: #6b7280;
+}
+
+.gantt-scroll {
+    overflow-x: auto;
+}
+
+#gantt-chart {
+    width: auto;
+    max-width: none;
+    height: auto;
+    display: block;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+/* ---------- Project detail pages ---------- */
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+.back-link:hover { color: var(--accent); }
+
+/* ---------- Bar chart ---------- */
+#bar-chart {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  display: block;
+}
+/* Горизонтальные столбики */
+.bar {
+  transition: width 0.8s ease;  /* ← анимируем ширину, а не высоту */
+  /* fill: #003153; */
+  fill: #3E5F8A;
+}
+.bar-value {
+  font-size: 13px;
+  fill: #0EA5A4;
+  font-weight: 600;
+}
+.bar-label {
+  font-size: 12px;
+  fill: #475467;
+  font-weight: 500;
+}
+.bar-label-task {
+  font-size: 12px;
+  /* fill: #3a4049; */
+  /* fill: #182633; */
+  /* fill:#182633; */
+  fill: var(--complete-color, #182633);
+  font-weight: 500;
+}
+.bar-label-other {
+  font-size: 12px;
+  /* fill:#182633; */
+  fill: var(--complete-color, #182633);
+  font-weight: 500;
+}
+.bar-completion {
+  fill: #4CAF50;
+}
+.completion-text {
+  text-anchor: middle;
+  font-size: 11px;
+  fill:#182633;
+  font-weight:600;
+}
+.bar-plan {
+  fill: #B8C1CE;
+  fill-opacity: 0.7;
+  stroke: #d1d5db;
+  stroke-width: 1;
+}
+.backlog-text {
+  text-anchor: "start";
+  font-size: 10px;
+  fill:#182633;
+  font-weight:600;
+}
+.header-label {
+  font-size:12px;
+  /* font-weight: "bold"; */
+  fill: #1a1a2e;
+  font-weight: 600;
+}
+.month-label {
+  font-size:12px;
+  fill: #1a1a2e;
+  font-weight: 600;
+}
+.week-gridLine {
+  stroke: #667085;
+  stroke-width: 1px;
+  stroke-dasharray: 4,4
+}
+.axis-line {
+  stroke: #667085;
+  stroke-width: 2;
+}

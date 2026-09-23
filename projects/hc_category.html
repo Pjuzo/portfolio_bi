@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Категории персонала</title>
+  <link rel="stylesheet" href="project_monitor.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-name">Категории персонала</span>
+        <span class="brand-role">SQL</span>
+      </div>
+      <nav>
+        <a href="../index.html#projects">Projects</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding-top: 32px;">
+    <a href="../index.html#projects" class="back-link">&larr; Назад ко всем проектам</a>
+    <section class="detail-hero">
+      <h3>Категории персонала</h3>
+      <p class="detail-meta"> SQL &middot; 1C &middot; апрель 2025</p>
+      <p class="detail-summary">
+    Численность по категориям персонала за 6 месяцев в разбивке по проектам, организациям группы и категориям. Выводится среднее значение в разбивке по месяцам за 6 месяцев. Категории имеют временную привязку к кадровой истории сотрудников.
+      </p>
+    </section>
+
+<pre class="sql-block">
+    <code class="language-sql">
+---- Запрос для определения явочной численности персонала из данных табельного учета 1С в разбивке по проектам, организациям группы и категориям. Выводится среднее значение в разбивке по месяцам за 6 месяцев. Категории имеют временную привязку к кадровой истории сотрудников
+---- Все наименования таблиц, полей, параметров выборки - примерные и не соответствуют реальным данным базы 1С.
+
+--SET SHOWPLAN_ALL ON;
+--GO
+----Сначала задаем временной диапазон запроса: в данном случае 6 месяцев заканчивая последней датой текущего месяца
+
+
+
+DECLARE @endt DATE, @stdt Date
+SET @endt=EOMONTH(CURRENT_TIMESTAMP);
+SET @stdt=DATEADD(m, DATEDIFF(m, 0,  GETDATE()) - 7, 0);
+;
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+---- определяем справочник организаций для дальнейшей выборки и читаемости данных запроса
+IF OBJECT_ID('tempdb.dbo.#ent', 'U') IS NOT NULL
+  DROP TABLE #ent;
+ CREATE TABLE #ent (
+                        [FKey] VARCHAR(36) NOT NULL PRIMARY KEY,
+                        [Entity] VARCHAR(100) NOT NULL,
+                        [INN] NVARCHAR(70) NOT NULL
+);
+
+INSERT INTO #ent WITH (TABLOCK)
+Select
+            convert(varchar(36), o._IDRRef, 2) AS [FKey],
+            o._Description AS [Entity],
+            o._Fld9620 AS INN
+FROM  [zup].[dbo]._Reference169 o
+WHERE convert(varchar(36), o._IDRRef, 2) IN ('9100007076AD697111E9919AEE90F7DA','9100007076AD697111E99177CEA72E11'
+,'90F9007076AD697111E9A73E90BFB1A1')
+;
+---- Определение принадлежности к проекту либо по территории выполнения работ либо по принадлежности к подразделению
+IF OBJECT_ID('tempdb.dbo.#terfin', 'U') IS NOT NULL
+  DROP TABLE #terfin;
+ CREATE TABLE #terfin (
+                        [dt] DATE NULL,
+                        [fdt] DATE NULL,
+                        fin NVARCHAR(255) NULL,
+                        territory VARCHAR(36) NULL,
+                        itemFin VARCHAR(100) NULL
+);
+
+INSERT INTO #terfin WITH (TABLOCK)
+SELECT
+            dateadd(year, -2000, CAST(t._Period AS DATE)) dt
+            ,lead(dateadd(year, -2000, CAST(t._Period AS DATE))) over (partition by convert(varchar(36), t._Fld29260RRef, 2) 
+            order by convert(varchar(36), t._Fld29260RRef, 2),dateadd(year, -2000, t._Period)) As fdt
+            ,f._Description as fin
+            ,convert(varchar(36), t._Fld29260RRef, 2) territory
+            ,convert(varchar(36), t._Fld29269RRef, 2) itemFin
+----РегистрСведений.БухучетЗарплатыТерриторийВыполненияРабот
+FROM [zup].[dbo]._InfoRg29279 t
+----Справочник.СтатьиФинансированияЗарплата
+LEFT JOIN [zup].[dbo]._Reference301 f
+ON convert(varchar(36), t._Fld29269RRef, 2)=convert(varchar(36), f._IDRRef, 2)
+;
+
+WITH
+----РегистрНакопления.ДанныеТабельногоУчетаРабочегоВремениСотрудников
+input
+as
+(
+SELECT
+            convert(date, (case when year (t._Period) < 3773 then t._Period else dateadd(year, -2000, t._Period) end)) AS dt,
+            convert(varchar(36), t._Active, 2) AS [Активность],
+            convert(varchar(36), t._Fld30169RRef, 2) AS [Сотрудник],
+            y.[_Description] AS [ВидУчетаВремени],
+            convert(varchar(36), t._Fld30171RRef, 2) AS [Территория],
+            --,convert(varchar(36), t._Fld39790RRef, 2) [Смена]
+            convert(varchar(36), t._Fld37092RRef, 2) AS [Организация]
+FROM [zup].[dbo]._AccumRg30167 t
+---- для отбора по видам учета рабочего времени
+LEFT JOIN [zup].[dbo]._Reference99 y
+ON convert(varchar(36), t._Fld30170RRef, 2)=convert(varchar(36), y._IDRRef, 2)
+WHERE
+            convert(date, (case when year (t._Period) < 3773 then t._Period else dateadd(year, -2000, t._Period) end)) 
+            between @stdt and @endt
+            -- определяем перечень организаций группы для выборки
+            and convert(varchar(36), t._Fld37092RRef, 2) in ('9100007076AD697111E9919AEE90F7DA'
+            ,'9100007076AD697111E99177CEA72E11','90F9007076AD697111E9A73E90BFB1A1')
+            -- ВидУчетаВремени = явка, Праздники, Праздники без повышенной оплаты, ночные часы и т.д.
+            and convert(varchar(36), t._Fld30170RRef, 2) in ('B27DA0A9CD399B3A11E7BD99EA197E79', 'B27DA0A9CD399B3A11E7BD99EA197E6A'
+            ,'B933A0A9CD399B3A11E7DFD9669EE6CF','90E9007076AD697111E7C09D99DA73CB'
+            ,'90E9007076AD697111E7C09D99DA73CA') --явка
+),
+---- Выделяем только тех сотрудников, которые были в табелях учета рабочего времени
+input_people as (
+            select distinct [Сотрудник] from input),
+---- РегистрСведений.КадроваяИсторияСотрудников
+rec as
+(
+SELECT
+            convert(varchar(36), t._Fld27927RRef, 2) [Сотрудник],
+            convert(varchar(36), t._Fld27929RRef, 2) [Организация],
+            convert(varchar(36), t._Fld27929RRef, 2) [Подразделение],
+            convert(varchar(36), t._Fld27930RRef, 2) [Должность],
+            convert(varchar(36), t._Fld27931RRef, 2) [ДолжностьПоШтатномуРасписанию],
+            convert(varchar(36), t._Fld27937RRef, 2) [ГоловнойСотрудник],
+            convert(varchar(36), t._Fld27939, 2) [ЭтоГоловнойСотрудник],
+            convert(date, (case when year (t._Fld27936) < 3773 then t._Fld27936 
+                else dateadd(year, -2000, t._Fld27936) end)) ValidTill,
+            convert(date, (case when year (t._Period) < 3773 
+                then t._Period else dateadd(year, -2000, t._Period) end)) dt
+FROM [zup].[dbo]._InfoRg27929 t
+---- РегистрСведений.ВидыЗанятостиСотрудников для фильтра по основной ставке
+INNER JOIN [zup].[dbo]._InfoRg33179 b 
+      ON convert(varchar(36), t._Fld27927RRef, 2)=convert(varchar(36), b._Fld33190RRef, 2)
+WHERE
+convert(varchar(36), t._Active, 2)='01'
+--отбор по организациям группы
+and convert(varchar(36), t._Fld27929RRef, 2) in ('9100007076AD697111E9919AEE90F7DA',
+'9100007076AD697111E99177CEA72E11','90F9007076AD697111E9A73E90BFB1A1')
+----вид занятости основная ставка
+and (convert(date, (case when year (t._Fld27936) < 3773 
+      then t._Fld27936 else dateadd(year, -2000, t._Fld27936) end))>=@stdt
+    or convert(date, (case when year (t._Fld27936) < 3773 
+            then t._Fld27936 else dateadd(year, -2000, t._Fld27936) end))='2001-01-01') ---- дата не установлена
+---- только сотрудники, фигурирующие в табелях учета рабочего времени со всеми фильтрами
+and convert(varchar(36), t._Fld27927RRef, 2) in (select input_people.[Сотрудник] from input_people)
+),
+----Справочник.ШтатноеРасписание
+cat as
+(
+SELECT DISTINCT
+            convert(varchar(36), t._Fld9990RRef, 2) [Подразделение]
+            ,convert(varchar(36), t._Fld9991RRef, 2) [Должность]
+            ,convert(varchar(36), c._Description, 2) Categ
+FROM [zup].[dbo]._Reference393 t --Справочник.ШтатноеРасписание
+
+----Справочник.КатегорииДолжностей
+LEFT JOIN [zup].[dbo]._Reference76990 c
+ON convert(varchar(36), t._Fld79327RRef, 2)=convert(varchar(36), c._IDRRef, 2)     
+WHERE
+-- нет пометки на удаление
+convert(varchar(36), t._Marked, 2)='00'
+---- ключ должности не пустой
+and convert(varchar(36), t._Fld9991RRef, 2)!='00000000000000000000000000000000'
+and convert(varchar(36), c._Description, 2) is not null
+--не закрыта
+and convert(varchar(36), t._Fld9997, 2)='00'
+--утверждена
+and convert(varchar(36), t._Fld9997, 2)='01'
+),
+---- штатное расписание, объединенное с кадровой историей сотрудников
+job1 as (
+Select
+            r.[Сотрудник]
+            ,r.[Организация]
+            ,r.Подразделение
+            ,d._Description depName
+            ,r.Должность
+            ,r.ValidTill
+            ,r.dt
+            ,r.dt as datestart
+            ,coalesce(lead(r.dt) over(PARTITION BY r.[Сотрудник],r.Организация order by r.dt),getdate()) as dateend
+            ,c.Categ
+FROM rec r
+            left join cat c
+            ON r.Должность=c.Должность and r.Подразделение=c.Подразделение
+            left join [zup].[dbo]._Reference217 d
+            ON r.Подразделение=convert(varchar(36), d._IDRRef, 2)
+WHERE c.Categ is not null
+            and r.dt<=getdate()
+),
+---- присвоение категорий согласно штатному расписанию сотрудникам из табеля учета рабочего времени 
+---- в зависимости от временных промежутков кадровой истории
+rankCat as (
+SELECT DISTINCT
+            i.dt
+            ,i.Сотрудник
+            ,i.Организация
+            ,j.Подразделение
+            ,j.Должность
+            ,i.Территория
+            ,case
+                        j.Categ
+                        when 'ОПР' then 'ОПР+ВРП'
+                        when 'ВРП' then 'ОПР+ВРП'
+                        else j.Categ
+                        end as Categ
+            ,j.depName
+FROM input i
+left join job1 j
+ON i.[Организация]=j.Организация and i.Сотрудник=j.Сотрудник
+            and i.dt >= j.datestart and i.dt < j.dateend
+WHERE
+j.Categ is not null
+),
+depFin AS
+(
+SELECT
+            cast(dateadd(year, -2000, t._Period) AS DATE) dt
+            ,lead(dateadd(year, -2000, t._Period)) over (partition by convert(varchar(36), t._Fld29226RRef, 2) 
+                order by convert(varchar(36), t._Fld29226RRef, 2),dateadd(year, -2000, t._Period)) As fdt
+            ,convert(varchar(36), t._Fld29226RRef, 2) AS dep
+            ,convert(varchar(36), t._Fld29230RRef, 2) AS ItemFinKey
+            ,f._Description ItemFin
+----РегистрСведений.БухучетЗарплатыПодразделений
+FROM [zup].[dbo]._InfoRg29227 t
+LEFT JOIN [zup].[dbo]._Reference301 f
+ON convert(varchar(36), t._Fld29230RRef, 2)=convert(varchar(36), f._IDRRef, 2)
+),
+---- для корректной разбивки среднего по датам подсчитываем количество сотрудников на каждую дату
+preliminary as
+(SELECT
+            DISTINCT
+            s.dt
+            ,s.Организация EntKey
+            ,en.Entity Entity
+            ,s.categ
+            ,coalesce(u.fin,d.ItemFin) AS projfin
+            ,COUNT(s.Сотрудник) OVER (PARTITION BY s.dt, en.Entity, s.categ, coalesce(u.fin,d.ItemFin)) qty
+FROM rankCat s
+LEFT JOIN #ent en
+ON s.Организация=en.FKey
+LEFT JOIN #terfin u
+ON s.Территория=u.territory and s.dt between u.dt and coalesce(u.fdt,'2100-01-01')
+LEFT JOIN depFin d
+ON s.Подразделение=d.dep and s.dt between d.dt and coalesce(d.fdt,'2100-01-01')
+)
+
+
+SELECT
+            DATEADD(day, 1, EOMONTH(dt, -1)) dt
+            ,Entity
+            ,categ
+            ,projfin
+            ,AVG(qty) as avg_qty
+FROM preliminary
+GROUP BY
+            DATEADD(day, 1, EOMONTH(dt, -1))
+            ,Entity
+            ,categ
+            ,projfin
+ORDER BY categ, projfin,Entity, DATEADD(day, 1, EOMONTH(dt, -1))
+
+    </code>
+
+</pre>
+
+  </main>
+</body>
+</html>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>hljs.highlightAll();</script>
+

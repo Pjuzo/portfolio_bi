@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Риски ЭТП</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-name">Риски ЭТП</span>
+        <span class="brand-role">SQL</span>
+      </div>
+      <nav>
+        <a href="../index.html#projects">Projects</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding-top: 32px;">
+    <a href="../index.html#projects" class="back-link">&larr; Назад ко всем проектам</a>
+    <section class="detail-hero">
+      <h3>Риски ЭТП</h3>
+      <p class="detail-meta"> SQL &middot; API &middot; апрель 2025</p>
+      <p class="detail-summary">
+    Данные электронной торговой площадки, полученные через API, с добавленными к каждой процедуре фильтрами по основным рискам:
+   <ul class="highlights">
+    <li>1. Была ли процедура переторга;</li>
+    <li>2. Был ли эффект от переторга;</li>
+    <li>3. Слишком быстрая процедура (от даты публикации до даты вскрытия с учетом выходных дней).</li>
+    </ul> 
+      </p>
+    </section>
+
+<pre class="sql-block">
+    <code class="language-sql">
+----- Данные ЭТП с фильтрами по рискам для выведения в отчет:
+----- 1. была ли процедура переторга
+----- 2. был ли эффект от переторга
+----- 3. очень быстрая процедура (от даты публикации до даты вскрытия)
+
+---- устанавливаем понедельник как первый день недели.
+SET DATEFIRST 1; 
+
+----- перечень базовых процедур для процедур, у которых был переторг
+WITH
+base_proc AS
+(SELECT
+                        [procedure_id]
+                        ,[basic_procedure_id]
+                        ,[registry_number]
+                        ,[date_published]
+                        ,[lot_id]
+FROM [constr].[ETP].[ListProcedure]
+),
+---- Определение эффекта от переторга
+ptg_eff AS
+(SELECT  DISTINCT
+              b.[procedure_id]
+              ,sum(coalesce(f.[price]-v.[price],0)) over (partition by b.[procedure_id] 
+              order by b.[procedure_id]) as ptg_eff_cum
+FROM [constr].[ETP].[ListProcedure] l
+INNER JOIN base_proc b on l.basic_procedure_id=b.procedure_id
+INNER JOIN [constr].[ETP].[ViewApplicList] v on b.lot_id=v.lot_id
+INNER JOIN [constr].[ETP].[ViewApplicList] f on l.[lot_id]=f.lot_id and v.[supplier_id] =f.[supplier_id]
+)
+SELECT
+            DISTINCT
+                        l.[procedure_id] КлючПроцедуры
+                        ,[basic_procedure_id] КлючОсновнойПроцедуры --(если был переторг)
+                        ----- фильтр был переторг или нет
+                        ,case
+                                    when l.[procedure_id] in (Select distinct [basic_procedure_id] from [constr].[ETP].[ListProcedure])                               
+                                                then 1
+                                    else 0
+                                    end as 'with_torg'
+                        ------ был ли эффект от переторга
+                        ,case
+                                    when e.ptg_eff_cum>=0                                                  
+                                                then 1
+                                    else 0
+                                    end as 'ptg_eff'
+                        ,[registry_number]
+                        ,l.ent_id КлючОрганизации
+                        ,[procedure_title] ПредметПроцедуры
+                        ,[procedure_type] ТипПроцедуры
+                        ,[procedure_type_txt] ТипПроцедурыРасшифровка
+                        ,registry_number+' от '+FORMAT(CAST(date_published AS datetime), 'dd.MM.yyyy') РеквизитыПроцедуры
+                        ,[date_published] ДатаПубликации
+                        ,[date_start_registration] ДатаНачалаПриемаЗаявок
+                        ,DATEPART(dw, [date_start_registration]) ДеньНеделиНачалаПриемаЗаявок
+                        --,[date_end_registration] ДатаОкончанияПриемаЗаявок
+                        --,DATEPART(dw, [date_end_registration]) ДеньНеделиОкончанияПриемаЗаявок
+                        ,DATEDIFF(DAY,[date_start_registration],[date_end_registration]) СрокПроцедуры
+                        ------- фильтр по очень быстрым процедурам (менее 5 дней от даты публикации до вскрытия)
+                        ,case
+                                    when DATEDIFF(DAY,[date_start_registration],[date_end_registration])<=5 then 1
+                                    when DATEDIFF(DAY,[date_start_registration],[date_end_registration]) between 5 and 7
+                                                            and DATEPART(dw, [date_start_registration])>2 then 1
+                                    else 0
+                        end as filtr_days_5
+FROM [constr].[ETP].[ListProcedure] l
+LEFT JOIN ptg_eff e on l.procedure_id=e.procedure_id
+ORDER BY l.[procedure_id]
+
+    </code>
+
+</pre>
+
+  </main>
+</body>
+</html>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>hljs.highlightAll();</script>
+

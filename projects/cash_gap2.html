@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Прогноз кассовых разрывов</title>
+  <link rel="stylesheet" href="cash_gap2.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-name">Прогноз кассовых разрывов</span>
+        <span class="brand-role">BI Test</span>
+      </div>
+      <nav>
+        <a href="../index.html#projects">Projects</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding-top: 32px;">
+    <a href="../index.html#projects" class="back-link">&larr; Назад ко всем проектам</a>
+    <section class="detail-hero">
+      <h3>Прогноз кассовых разрывов</h3>
+      <p class="detail-meta">Power BI &middot; SQL &middot; DAX &middot; апрель 2024</p>
+      <p class="detail-summary">
+        Прогноз кассовых разрывов на основе платежного календаря 1С. В разделе с настройками можно выбрать версию бюджета, скорректировать начальный остаток с учетом поступившего финансирования и определить горизонт прогнозирования.
+      </p>
+
+    </section>
+
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="wrap">
+      <div class="top">
+        <div>
+          <h3>Прогноз</h3>
+          <div class="sub">Прогноз ликвидности по неделям. Для просмотра деталей - нажмите на строку недели в таблице
+            ниже.</div>
+
+        </div>
+
+        <fieldset class="settings-frame">
+
+          <legend>Настройки</legend>
+
+          <div class="controls">
+
+            <label class="control">Сценарий: &nbsp;
+
+              <select id="scenario">
+
+                <option>Основной</option>
+
+                <option>Оптимистичный</option>
+
+                <option>Пессимистичный</option>
+
+              </select>
+
+            </label>
+
+
+
+            <label class="control open">Остаток на начало: &nbsp;₽
+
+              <input id="opening" type="number" value="50000" step="5000">
+
+            </label>
+
+
+
+            <label class="control">Горизонт: &nbsp;
+
+              <select id="horizon">
+
+                <option value="14">14 нед.</option>
+
+                <option value="8">8 нед.</option>
+
+                <option value="6">6 нед.</option>
+
+              </select>
+
+            </label>
+
+          </div>
+
+        </fieldset>
+
+      </div>
+
+
+
+      <div class="kpis" id="kpis"></div>
+
+
+
+
+
+      <div class="card">
+
+        <div class="chartbox">
+
+          <div id="chartContainer" style="width: 100%; max-width: 1100px; height: 350px;">
+
+            <canvas id="cashGapChart"></canvas>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+
+
+      <div class="card">
+
+        <h3 style="margin:0 0 8px">Прогноз по неделям</h3>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Неделя</th>
+
+              <th>Источники поступлений</th>
+
+              <th>Детали платежей</th>
+
+              <th>Чистый денежный поток</th>
+
+              <th>Остаток на конец</th>
+
+              <th>Кассовый остаток/разрыв</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="rows"></tbody>
+
+        </table>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <h3 id="detailTitle" style="margin:0 0 15px">Selected week</h3>
+
+
+
+        <div class="detail">
+
+          <div>
+
+            <h3>Источники поступлений</h3>
+
+            <div id="arDrivers"></div>
+
+          </div>
+
+
+
+          <div>
+
+            <h3>Детали платежей</h3>
+
+            <div id="apDrivers"></div>
+
+          </div>
+
+        </div>
+
+        <div class="summary" id="summary"></div>
+
+        <div class="note">
+
+          Выбранный сценарий определяет сумму и время поступлений и платежей.
+
+          <code>cash_gap_forecast.js</code> для источника SQL или excel - заменить в коде
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <script src="cash_gap2.js"></script>
+
+
+
+  </main>
+
+  <footer class="site-footer">
+
+    <div class="container">
+
+      <p>&copy; 2026 &mdash; Built with HTML, CSS, SVG &amp; JavaScript.</p>
+
+    </div>
+
+  </footer>
+
+  <!-- <script src="cash_gap.js"></script> -->
+
+</body>
+
+</html>

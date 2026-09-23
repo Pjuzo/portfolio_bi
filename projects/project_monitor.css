@@ -1,0 +1,299 @@
+:root {
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --surface-2: #FFFFFF;
+  --border: #E2E6EB;
+  --color-border-strong: #CBD2DA;
+  --text: #101828;
+  --color-text-secondary: #475467;
+  --color-text-third: #23415A;
+  --text-muted: #667085;
+  --accent: #0EA5A4;
+  --accent-2: #0B8483;
+  --plan: #007FFF;
+  --plan2: #9AA6B9;
+  --fact: #49678D;
+  --radius: 10px;
+  --max-width: 2560px;
+  font-size: 16px;
+}
+/* * { box-sizing: border-box; } */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Verdana", Roboto, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+}
+.brand-name {
+  font-weight: 600;
+  margin-right: 8px;
+}
+.brand-role {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 0.9rem;
+}
+nav a:hover {
+  color: var(--accent);
+}
+.hero {
+  padding: 40px 0 10px;
+}
+.hero-summary {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  max-width: 640px;
+}
+/* ---------- Sections ---------- */
+.section {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+}
+.section h2 {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  display: inline-block;
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+.back-link:hover {
+  color: var(--accent);
+}
+
+.detail-hero {
+  /* width: auto;      */
+  max-width: none;
+}
+
+.detail-hero h3 {
+    margin-bottom: 6px;
+    /* margin-left: 20px; */
+}
+
+.detail-hero .detail-meta {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.detail-hero .detail-summary {
+  max-width: 2540px;  
+  /* margin: 0; */
+  /* margin: auto; */
+  padding: 26px;
+  color: var(--text-muted);
+  /* text-wrap: balance; */
+}
+
+/* .detail-hero .detail-summary {
+  max-width: 100vw;              
+  margin: auto;
+  padding: 26px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  text-wrap: balance;
+} */
+/* ---------- Вставка для project_monitor ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+.container_charts {
+  display: flex;
+  height: 90vh;
+  width: 100%;
+}
+
+.left-column {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  min-height: 0;      
+}
+
+.left-column .chart {
+  flex: 1 1 0;          /* was: flex: 1 — same effect, more explicit */
+  min-height: 0;        /* NEW — critical */
+  min-width: 0;          /* NEW */
+}
+
+.chart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  color: var(--color-text-third);
+  font-size: 14px;
+  min-width: 0;
+  min-height: 0;         /* NEW */
+  padding: 12px;
+  overflow: hidden;      /* was: visible — hidden now that height is real and bounded */
+}
+
+/* Right column - 60%, 1 big + 1 small */
+.right-column {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.right-column .chart-big {
+  flex: 2;
+  /* adjust ratio as needed */
+}
+.right-column .chart-small {
+  flex: 1;
+}
+/* .chart-label {
+  padding: 10px 10px;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 400;
+  } */
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+/* ---------- окончание вставки ---------- */
+
+.detail-chart-block {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;          /* NEW */
+  display: flex;           /* NEW — needs to be a flex column itself */
+  flex-direction: column;  /* NEW */
+  flex: 1 1 auto;           /* NEW — fills the .chart after the title */
+}
+
+.chart-label {
+  margin: 0 0 8px 0;
+  flex: 0 0 auto;          /* NEW — title keeps its own size, doesn't get squeezed */
+}
+
+#completion-chart,
+#term-chart,
+#cost-chart {
+  display: block;
+  width: 100%;
+  height: 100%;      /* was: auto */
+  min-width: 0;
+  min-height: 0;      /* NEW */
+  flex: 1 1 auto;      /* NEW — SVG itself is the flexible part inside detail-chart-block */
+}
+
+.detail-chart-block h3 {
+  margin-bottom: 4px;
+}
+/* .detail-chart-block .chart-note { color: var(--text-muted);
+  font-size: 0.85rem; margin-bottom: 16px; } */
+.bar-plan {
+  fill: var(--plan);
+}
+.bar-plan2 {
+  fill: var(--plan2);
+}
+.bar-fact {
+  fill: var(--fact);
+}
+.text-completion {
+  text-anchor: "end";
+  font-size: 11px;
+  fill: "white";
+  font-weight: "600";
+}
+.bar-label_completion {
+  text-anchor: start;
+  font-size: 14px;
+  fill: var(--color-text-third);
+  font-weight: 500;
+}
+.bar-label-hc-plan {
+  text-anchor: middle;
+  font-size: 0.8em;
+  /* font-size: 14px; */
+  fill: var(--plan2);
+  font-weight: 600;
+}
+.bar-label-hc-fact {
+  text-anchor: middle;
+  font-size: 0.8em;
+  /* font-size: 14px; */
+  fill: var(--fact);
+  font-weight: 600;
+}
+.bar-label-hc-proj {
+  text-anchor: middle;
+  font-size: 1em;
+  /* font-size: 14px; */
+  fill: var(--fact);
+  font-weight: 600;
+}
+.bar-label-hc-suffic {
+  text-anchor: middle;
+  font-size: 1em;
+  /* font-size: 14px; */
+  fill: var(--plan);
+  font-weight: 600;
+}
+.term-x-label {
+  text-anchor: start;
+  font-size: 0.75em;
+  fill: var(--color-text-third);
+  font-weight: 400;
+}
+.term-y-label {
+  text-anchor: start;
+  font-size: 1em;
+  fill: var(--color-text-third);
+  font-weight: 500;
+}
+.legend-label {
+  text-anchor: start;
+  font-size: 0.9em;
+  fill: var(--color-text-third);
+  font-weight: 400;
+}

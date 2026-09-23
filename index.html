@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI analyst</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <span class="brand-name" id="profile-name">BI analyst</span>
+                <span class="brand-role" id="profile-role">Шевчук К.</span>
+            </div>
+            <nav>
+                <a href="#projects">Проекты</a>
+                <a href="#about">About</a>
+                <a href="#skills">Навыки</a>
+                <a href="#contact">Контакты</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <p id="profile-summary" class="hero-summary">Loading profile…</p>
+        </div>
+    </section>
+
+    <main class="container">
+
+        <section id="projects" class="section">
+            <h2>Проекты</h2>
+
+            <div class="filters" id="filters" role="tablist" aria-label="Filter projects by category">
+                <button class="filter-btn is-active" data-filter="all">All</button>
+            </div>
+
+            <div class="project-grid" id="project-grid">
+
+            </div>
+        </section>
+
+       
+        <!-- <section id="chart" class="section">
+            <h2 id="chart-title">Highlights</h2>
+            <svg id="bar-chart" viewBox="0 0 320 220" preserveAspectRatio="xMidYMid meet" role="img"
+                aria-label="Bar chart">
+                
+            </svg>
+        </section> -->
+
+        <!-- ===== Timeline =====
+        <section id="timeline" class="section">
+            <h2>Timeline</h2>
+            <svg id="timeline-svg" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" role="img"
+                aria-label="Project timeline, spaced by date">
+            
+            </svg>
+         </section>  -->
+
+        
+        <section id="about" class="section about-grid">
+            <div class="card intro">
+                <h2>About</h2>
+                <p class="muted">Полный цикл разработки отчетов BI от ETL и моделирования данных до отчета на Report Server.</p>
+
+                <div class="skills">
+                    <span class="chip">Power BI</span>
+                    <span class="chip">DAX</span>
+                    <span class="chip">SQL</span>
+                    <span class="chip">Python</span>
+                    <span class="chip">ETL</span>
+                    <span class="chip">API</span>
+                    <span class="chip">PowerShell</span>
+                </div>
+
+                <div class="about-actions">
+                    <a class="btn download" href="resume.pdf" download>Скачать резюме (PDF)</a>
+                    <!-- <a class="link-quiet" href="#contact">Email / LinkedIn</a> -->
+                </div>
+
+                <hr class="card-divider">
+
+                <h3>Основные моменты</h3>
+                <ul class="highlights">
+                Осуществила переход на новую систему отчетов и новую систему хранения данных - в базе данных SQL. 
+    <p></p>
+	<p class="marked">Прежняя система отчетов: </p>
+	<li>1. источники в отчете - excel, csv, json и т.д.;</li>
+	<li>2. длительное время загрузки, вызывающее раздражение пользователей;</li>
+	<li>3. любое изменение, в том числе загрузка данных зачастую требовали ручных изменений.</li>
+	<p></p>
+	<p class="marked">Новая система отчетов:</p>
+	<li>1. полностью автоматизированная система отчетов, налаженные ETL процессы по получению и очистке данных из специализированных программ: StroyBot, Primavera, 1C, баз управленческого учета, данных с электронных торговых площадок и множества источников в Excel.</li>
+	<li>2. минимальное время загрузки из хранилища данных SQL с помощью оптимизированных запросов.</li>
+	<li>3. прозрачные метрики отчетов, отвечающие заданной задаче.</li>
+    <li>4. индивидуальный подход к требованиям бизнес-заказчиков, в том числе через реализацию требуемого визуала с помощью SVG, CSS и HTML.</li>
+
+                </ul>
+            </div>
+
+            <aside  id="contact" class="card contact-card">
+                <h3>Контакты</h3>
+                <p class="muted">Email: <a href="shevchukki@yandex.ru">shevchukki@yandex.ru</a></p>
+                <p class="muted">telegram: <a href="https://t.me/ksenia_shev_telegr">ksenia_shev_telegr</a></p> 
+                <!-- <p class="muted">GitHub: <a href="#">github.com/your</a></p> -->
+
+                <hr class="card-divider">
+
+                <!-- <h4>Quick tech</h4>
+                <div class="tags">
+                    <span class="tag">SQL</span>
+                    <span class="tag">Power BI</span>
+                    <span class="tag">DAX</span>
+                    <span class="tag">Python</span>
+                </div> -->
+            </aside>
+        </section>
+
+       
+        <section id="skills" class="section">
+            <h2>Навыки </h2>
+            <div class="card">
+                <p class="muted">Краткий обзор технологического стека.</p>
+                <div class="skills-grid">
+                    <div class="skill-group">
+                        <h4>Data &amp; SQL</h4>
+                        <p class="muted">T-SQL, MySQL, PostgreSQL</p>
+                    </div>
+                    <div class="skill-group">
+                        <h4>ETL &amp; Orchestration</h4>
+                        <p class="muted">Python, PowerShell, Power Query, VBA</p>
+                    </div>
+                    <div class="skill-group">
+                        <h4>BI &amp; Visualization</h4>
+                        <p class="muted">Power BI (DAX), SVG, Plotly, Matplotlib, Seaborn, Vega, JavaScript</p>
+                    </div>
+                    <!-- <div class="skill-group">
+                        <h4>Cloud / DevOps</h4>
+                        <p class="muted">Azure, Git, CI/CD, deployment pipelines</p>
+                    </div> -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- <section id="contact" class="section">
+            <div class="card cta">
+                <div>
+                    <h3>Get in touch</h3>
+                    <p class="muted">Email me at <a href="mailto:you@domain.com">you@domain.com</a> — or download my
+                        resume to see full experience.</p>
+                </div>
+                <div class="cta-actions">
+                    <a class="btn download" href="mailto:you@domain.com">Email</a>
+                    <a class="btn" href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+                </div>
+            </div>
+        </section> -->
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="year">2026</span> Шевчук К.И.— BI аналитик. сделано с HTML, CSS, SVG &amp; JavaScript.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
