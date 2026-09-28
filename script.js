@@ -23,8 +23,8 @@ async function init() {
     renderProfile(state.data.profile);
     renderFilters(state.data.projects);
     renderProjects(state.data.projects);
-    renderChart(state.data.chart);
-    renderTimeline(state.data.projects);
+    // renderChart(state.data.chart);
+    // renderTimeline(state.data.projects);
 }
 
 // ---------- Profile ----------

@@ -632,984 +632,432 @@ function exportGanttResultToJSON(result) {
 
 
 function renderGanttChart(data) {
-
-  const result = processGanttData(data);
-
-  // exportGanttDataToCSV(result);
-
-  // exportGanttResultToJSON(result)
-
-  const tasks = result.tasksWithWeeks;
-
-  const minStart = result.minStart;
-
-  const maxEnd = result.maxEnd;
-
-  // const todayDate=result.todayDate;
-
-
-
-  const ns = "http://www.w3.org/2000/svg";
-
-
-
-  if (tasks.length === 0) {
-
-    console.warn('Нет данных для отрисовки');
-
-    return;
-
-  }
-
-
-
-  const svg = document.getElementById("gantt-chart");
-
-  // const containerWidth=svg.parentElement.clientWidth||1400;
-
-
-
-  //1. Настройка отступов для колонок
-
-  const paddingLeft = 200;
-
-  const paddingRight = 50;
-
-  const paddingTop = 60;
-
-  const paddingBottom = 40;
-
-
-
-  //2.  Настройка колонок
-
-  const col0X = paddingLeft - 10;        // Номер
-
-  const col1X = paddingLeft + 30;        // Название задачи
-
-  const col2X = paddingLeft + 160;       // Исполнитель
-
-  const col3X = paddingLeft + 250;       // План
-
-  const col4X = paddingLeft + 320;       // остаток
-
-  const col5X = paddingLeft + 400;       // процент выполнения
-
-
-
-  const columnBuffer = 100;
-
-  const paddingLeft2 = col5X + columnBuffer;
-
-
-
-  // определяем максимальную и минимальную неделю
-
-  const weeks = [];
-
-  const startWeek = result.minStartWeek;
-
-  const endWeek = result.maxEndWeek;
-
-
-
-  const weeksCount = (endWeek.week - startWeek.week);
-
-  const pixelsPerWeek = 20;
-
-  const minChartAreaWidth = Math.max(800, weeksCount * pixelsPerWeek);
-
-  const width = paddingLeft2 + minChartAreaWidth + paddingRight;
-
-  const height = Math.max(200, tasks.length * 45 + 60);
-
-  // const fontSizeLabel = clamp(Math.min(width, height) * 0.045, 9, 14);
-
-  // const width=Math.max(paddingLeft2+paddingRight+minChartAreaWidth, containerWidth)
-
-
-
-  // const chartWidth = 960;
-
-  const chartWidth = width - paddingLeft2 - paddingRight;
-
-  const chartHeight = height - paddingTop - paddingBottom;
-
-
-
-  const minDate = new Date(minStart);
-
-  const maxDate = new Date(maxEnd);
-
-
-
-  const todayDateDt = new Date("2024-08-15T00:00:00");
-
-
-
-  const totalDays = Math.ceil((maxDate - minDate) / (24 * 60 * 60 * 1000));
-
-  const barHeight = 30;
-
-  const gap = 10;
-
-
-
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-
-  svg.setAttribute("width", width);
-
-  svg.setAttribute("height", height);
-
-  svg.innerHTML = "";
-
-
-
-  // ----- ЗАГОЛОВКИ КОЛОНОК -----
-
-  const headers = [
-
-    { x: 0, text: "num", anchor: "start" },
-
-    { x: 30, text: "Работы", anchor: "start" },
-
-    { x: col2X, text: "Исполнитель", anchor: "start" },
-
-    { x: col3X, text: "План", anchor: "start" },
-
-    { x: col4X, text: "Остаток", anchor: "start" },
-
-    { x: col5X, text: "Выполнение", anchor: "start" }
-
-  ];
-
-
-
-  headers.forEach(header => {
-
-    const headerText = document.createElementNS(ns, "text");
-
-    headerText.setAttribute("x", header.x);
-
-    headerText.setAttribute("y", paddingTop - 15);
-
-    headerText.setAttribute("text-anchor", header.anchor);
-
-    headerText.setAttribute("class", "header-label");
-
-    headerText.textContent = header.text;
-
-    svg.appendChild(headerText);
-
-  });
-
-
-
-  // ----- ОСЬ ВРЕМЕНИ СВЕРХУ -----
-
-  const axisTop = document.createElementNS(ns, "line");
-
-  axisTop.setAttribute("x1", paddingLeft2);
-
-  axisTop.setAttribute("y1", paddingTop);
-
-  axisTop.setAttribute("x2", width - paddingRight);
-
-  axisTop.setAttribute("y2", paddingTop);
-
-  axisTop.setAttribute("class", "axis-line");
-
-  svg.appendChild(axisTop);
-
-
-
-  // ----- ВЕРТИКАЛЬНАЯ ОСЬ (слева) -----
-
-  const axisLeft = document.createElementNS(ns, "line");
-
-  axisLeft.setAttribute("x1", paddingLeft2);
-
-  axisLeft.setAttribute("y1", paddingTop);
-
-  axisLeft.setAttribute("x2", paddingLeft2);
-
-  axisLeft.setAttribute("y2", height - paddingBottom);
-
-  axisLeft.setAttribute("class", "axis-line");
-
-  svg.appendChild(axisLeft);
-
-
-
-
-
-  // ------Подписи месяцев добавляем над осью недель
-
-  const monthNames = ['янв', 'фев', 'мар', 'апр', 'май', 'июн',
-
-    'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-
-
-
-  const months = [];
-
-  let cursor = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-
-
-
-  while (cursor <= maxDate) {
-
-    const monthStart = cursor < minDate ? minDate : cursor;
-
-    const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-
-    const monthEnd = nextMonth > maxDate ? maxDate : new Date(nextMonth - 1);
-
-
-
-    months.push({
-
-      start: monthStart,
-
-      end: monthEnd,
-
-      boundaryStart: cursor,
-
-      label: `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}`
-
+    const result = processGanttData(data);
+    const tasks = result.tasksWithWeeks;
+    const minStart = result.minStart;
+    const maxEnd = result.maxEnd;
+    const ns = "http://www.w3.org/2000/svg";
+    if (tasks.length === 0) {
+      console.warn('no data');
+      return;
+    }
+    const svg = document.getElementById("gantt-chart");
+    const container = svg.parentElement;
+
+    const containerWidth = container.clientWidth || 1400;
+    const containerHeight = container.clientHeight || 600;
+
+    const baseWidth = 1400;
+    const baseHeight = 600;
+    const rawScale = Math.min(containerWidth / baseWidth, containerHeight / baseHeight);
+    const scale = Math.max(0.3, Math.min(rawScale, 1.2)); 
+
+    const S = (px) => px * scale;               
+    const F = (px) => `${Math.round(px * scale)}px`; 
+
+    const paddingLeft = S(200);
+    const paddingRight = S(50);
+    const paddingTop = S(60);
+    const paddingBottom = S(40);
+
+    const col0X = paddingLeft - S(10);
+    const col1X = paddingLeft + S(30);
+    const col2X = paddingLeft + S(160);
+    const col3X = paddingLeft + S(250);
+    const col4X = paddingLeft + S(320);
+    const col5X = paddingLeft + S(400);
+    const columnBuffer = S(100);
+    const paddingLeft2 = col5X + columnBuffer;
+
+    const weeks = [];
+    const startWeek = result.minStartWeek;
+    const endWeek = result.maxEndWeek;
+    const weeksCount = (endWeek.week - startWeek.week);
+
+    const width = containerWidth;
+    const chartWidth = Math.max(S(200), width - paddingLeft2 - paddingRight);
+    const pixelsPerWeek = weeksCount > 0 ? chartWidth / weeksCount : chartWidth;
+
+    const height = containerHeight;
+    const rowAreaHeight = Math.max(S(100), height - paddingTop - paddingBottom - S(20));
+    const rowHeight = rowAreaHeight / tasks.length;
+    const gap = Math.max(2, Math.min(S(10), rowHeight * 0.25));
+    const barHeight = Math.max(12, rowHeight - gap);
+
+    const chartHeight = height - paddingTop - paddingBottom;
+    const minDate = new Date(minStart);
+    const maxDate = new Date(maxEnd);
+    const todayDateDt = new Date("2024-08-15T00:00:00");
+    const totalDays = Math.ceil((maxDate - minDate) / (24 * 60 * 60 * 1000));
+
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+    svg.style.display = "block";
+    svg.innerHTML = "";
+
+    const headers = [
+      { x: 0, text: "num", anchor: "start" },
+      { x: S(30), text: "Работы", anchor: "start" },
+      { x: col2X, text: "Исполнитель", anchor: "start" },
+      { x: col3X, text: "План", anchor: "start" },
+      { x: col4X, text: "Остаток", anchor: "start" },
+      { x: col5X, text: "Выполнение", anchor: "start" }
+    ];
+    headers.forEach(header => {
+      const headerText = document.createElementNS(ns, "text");
+      headerText.setAttribute("x", header.x);
+      headerText.setAttribute("y", paddingTop - S(15));
+      headerText.setAttribute("text-anchor", header.anchor);
+      headerText.setAttribute("class", "header-label");
+      headerText.style.fontSize = F(12);
+      headerText.textContent = header.text;
+      svg.appendChild(headerText);
     });
 
+    // ----- ОСЬ ВРЕМЕНИ СВЕРХУ -----
+    const axisTop = document.createElementNS(ns, "line");
+    axisTop.setAttribute("x1", paddingLeft2);
+    axisTop.setAttribute("y1", paddingTop);
+    axisTop.setAttribute("x2", width - paddingRight);
+    axisTop.setAttribute("y2", paddingTop);
+    axisTop.setAttribute("class", "axis-line");
+    svg.appendChild(axisTop);
 
+    const axisLeft = document.createElementNS(ns, "line");
+    axisLeft.setAttribute("x1", paddingLeft2);
+    axisLeft.setAttribute("y1", paddingTop);
+    axisLeft.setAttribute("x2", paddingLeft2);
+    axisLeft.setAttribute("y2", height - paddingBottom);
+    axisLeft.setAttribute("class", "axis-line");
+    svg.appendChild(axisLeft);
 
-    cursor = nextMonth;
+    const monthNames = ['янв', 'фев', 'мар', 'апр', 'май', 'июн',
+      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    const months = [];
+    let cursor = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    while (cursor <= maxDate) {
+      const monthStart = cursor < minDate ? minDate : cursor;
+      const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+      const monthEnd = nextMonth > maxDate ? maxDate : new Date(nextMonth - 1);
+      months.push({
+        start: monthStart,
+        end: monthEnd,
+        boundaryStart: cursor,
+        label: `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}`
+      });
+      cursor = nextMonth;
+    }
+    months.forEach((m, i) => {
+      const startOffset = Math.floor((m.start - minDate) / (24 * 60 * 60 * 1000));
+      const endOffset = Math.floor((m.end - minDate) / (24 * 60 * 60 * 1000)) + 1;
+      const xStart = paddingLeft2 + (startOffset / totalDays) * chartWidth;
+      const xEnd = paddingLeft2 + (endOffset / totalDays) * chartWidth;
+      const xMid = (xStart + xEnd) / 2;
+      const label = document.createElementNS(ns, "text");
+      label.setAttribute("x", xMid);
+      label.setAttribute("y", paddingTop - S(35));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("class", "month-label");
+      label.style.fontSize = F(12);
+      label.textContent = m.label;
+      svg.appendChild(label);
+      if (i > 0) {
+        const divider = document.createElementNS(ns, "line");
+        divider.setAttribute("x1", xStart);
+        divider.setAttribute("y1", paddingTop - S(20));
+        divider.setAttribute("x2", xStart);
+        divider.setAttribute("y2", height - paddingBottom);
+        divider.setAttribute("stroke", "#9ca3af");
+        divider.setAttribute("stroke-width", S(1.5));
+        svg.appendChild(divider);
+      }
+    });
 
+    const cursorDate = new Date(minDate);
+    while (cursorDate <= maxDate) {
+      const wk = getWeekAndYear(cursorDate.toISOString().split('T')[0]);
+      weeks.push(wk.week);
+      cursorDate.setDate(cursorDate.getDate() + 7);
+    }
+    if (weeks[weeks.length - 1] !== result.maxEndWeek.week) {
+      weeks.push(result.maxEndWeek.week);
+    }
+    weeks.forEach((week, i) => {
+      const x = paddingLeft2 + (i / (weeks.length - 1)) * chartWidth;
+      const label = document.createElementNS(ns, "text");
+      label.setAttribute("x", x);
+      label.setAttribute("y", paddingTop - S(15));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("class", "bar-label");
+      label.style.fontSize = F(11);
+      label.textContent = `${week} нед.`;
+      svg.appendChild(label);
+      if (i > 0) {
+        const gridLine = document.createElementNS(ns, "line");
+        gridLine.setAttribute("x1", x);
+        gridLine.setAttribute("y1", paddingTop);
+        gridLine.setAttribute("x2", x);
+        gridLine.setAttribute("y2", height - paddingBottom);
+        gridLine.setAttribute("class", "week-gridLine");
+        svg.appendChild(gridLine);
+      }
+    });
+
+    tasks.forEach((task, i) => {
+      const y = paddingTop + S(20) + i * (barHeight + gap);
+
+      const startDate = new Date(task.start);
+      const endDate = new Date(task.end);
+      const startOffset = Math.floor((startDate - minDate) / (24 * 60 * 60 * 1000));
+      const duration = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
+      const x = paddingLeft2 + (startOffset / totalDays) * chartWidth;
+      const barWidth = (duration / totalDays) * chartWidth;
+
+      const unit = task.unit || "";
+
+      const background_task = document.createElementNS(ns, "rect");
+      const background_fill = task.sorttask % 2 === 0 ? "#F7F8FA" : "#B8C1CE";
+      background_task.setAttribute("x", 0);
+      background_task.setAttribute("y", y);
+      background_task.setAttribute("width", col5X - S(10));
+      background_task.setAttribute("height", barHeight);
+      background_task.setAttribute("fill", background_fill);
+      background_task.setAttribute("rx", S(4));
+      svg.appendChild(background_task);
+
+      const progress_compl = task._proj_plan ? Math.min(task.completion, 1) : 0;
+      const completeColor = progress_compl > 0.95 ? "green" : "#182633";
+
+      const num = document.createElementNS(ns, "text");
+      num.setAttribute("x", S(5));
+      num.setAttribute("y", y + barHeight / 2 + 4);
+      num.setAttribute("text-anchor", "start");
+      num.setAttribute("class", "bar-label");
+      num.style.fontSize = F(11);
+      num.textContent = task.sorttask || "0";
+      svg.appendChild(num);
+
+      const label = document.createElementNS(ns, "text");
+      label.setAttribute("x", S(30));
+      label.setAttribute("y", y + barHeight / 2 + 4);
+      label.setAttribute("text-anchor", "start");
+      label.setAttribute("class", "bar-label-task");
+      label.style.setProperty("--complete-color", completeColor);
+      label.style.fontSize = F(10);
+      label.textContent = task.task || "—";
+      svg.appendChild(label);
+
+      const executor = document.createElementNS(ns, "text");
+      executor.setAttribute("x", col2X);
+      executor.setAttribute("y", y + barHeight / 2 + 4);
+      executor.setAttribute("text-anchor", "start");
+      executor.setAttribute("class", "bar-label-other");
+      executor.style.setProperty("--complete-color", completeColor);
+      executor.style.fontSize = F(12);
+      executor.textContent = task.executor || "—";
+      svg.appendChild(executor);
+
+      const planValue = task._proj_plan !== undefined ? task._proj_plan : "—";
+      const planText = document.createElementNS(ns, "text");
+      planText.setAttribute("x", col3X);
+      planText.setAttribute("y", y + barHeight / 2 + 4);
+      planText.setAttribute("text-anchor", "start");
+      planText.setAttribute("class", "bar-label-other");
+      planText.style.setProperty("--complete-color", completeColor);
+      planText.style.fontSize = F(12);
+      planText.textContent = typeof planValue === 'number' ? `${planValue.toLocaleString('ru-RU')} ${unit}` : planValue;
+      svg.appendChild(planText);
+
+      const restValue = task._proj_rest !== undefined ? task._proj_rest : "—";
+      const restText = document.createElementNS(ns, "text");
+      restText.setAttribute("x", col4X);
+      restText.setAttribute("y", y + barHeight / 2 + 4);
+      restText.setAttribute("text-anchor", "start");
+      restText.setAttribute("class", "bar-label-other");
+      restText.style.setProperty("--complete-color", completeColor);
+      restText.style.fontSize = F(12);
+      restText.textContent = typeof restValue === 'number' ? `${restValue.toLocaleString('ru-RU')} ${unit}` : restValue;
+      svg.appendChild(restText);
+
+      const compl = document.createElementNS(ns, "rect");
+      compl.setAttribute("x", col5X);
+      compl.setAttribute("y", y);
+      compl.setAttribute("width", col5X - col4X);
+      compl.setAttribute("height", barHeight);
+      compl.setAttribute("rx", S(4));
+      compl.setAttribute("fill", "#f3f4f6");
+      compl.setAttribute("stroke", "#4CAF50");
+      compl.setAttribute("stroke-width", S(1));
+      svg.appendChild(compl);
+
+      const fillRect_compl = document.createElementNS(ns, "rect");
+      fillRect_compl.setAttribute("x", col5X);
+      fillRect_compl.setAttribute("y", y);
+      fillRect_compl.setAttribute("width", (col5X - col4X) * progress_compl);
+      fillRect_compl.setAttribute("height", barHeight);
+      fillRect_compl.setAttribute("rx", S(4));
+      fillRect_compl.setAttribute("class", "bar-completion");
+      svg.appendChild(fillRect_compl);
+
+      const complText = document.createElementNS(ns, "text");
+      complText.setAttribute("x", col5X + (col5X - col4X) / 2);
+      complText.setAttribute("y", y + barHeight / 2 + 4);
+      complText.setAttribute("class", "completion-text");
+      complText.style.fontSize = F(11);
+      complText.textContent = typeof progress_compl === 'number' ? `${progress_compl * 100}%` : progress_compl;
+      svg.appendChild(complText);
+
+      const bgRect = document.createElementNS(ns, "rect");
+      bgRect.setAttribute("x", x);
+      bgRect.setAttribute("y", y);
+      bgRect.setAttribute("width", barWidth);
+      bgRect.setAttribute("height", barHeight);
+      bgRect.setAttribute("rx", S(4));
+      bgRect.setAttribute("class", "bar-plan");
+      svg.appendChild(bgRect);
+
+      const progress = task._proj_plan ? Math.min(task.completion, 1) : 0;
+      const fillRect = document.createElementNS(ns, "rect");
+      fillRect.setAttribute("x", x);
+      fillRect.setAttribute("y", y);
+      fillRect.setAttribute("width", barWidth * progress);
+      fillRect.setAttribute("height", barHeight);
+      fillRect.setAttribute("rx", S(4));
+      fillRect.setAttribute("class", "bar");
+      fillRect.setAttribute("fill-opacity", progress > 0.8 ? 1 : 0.8);
+      svg.appendChild(fillRect);
+
+      const todayOffset = Math.floor((todayDateDt - minDate) / (24 * 60 * 60 * 1000));
+      const xToday = paddingLeft2 + (todayOffset / totalDays) * chartWidth;
+      if (todayDateDt >= minDate && todayDateDt <= maxDate) {
+        const todayLine = document.createElementNS(ns, "line");
+        todayLine.setAttribute("x1", xToday);
+        todayLine.setAttribute("y1", paddingTop - S(20));
+        todayLine.setAttribute("x2", xToday);
+        todayLine.setAttribute("y2", height - paddingBottom);
+        todayLine.setAttribute("stroke", "red");
+        todayLine.setAttribute("stroke-width", S(1.5));
+        todayLine.setAttribute("stroke-dasharray", `${S(4)},${S(4)}`);
+        svg.appendChild(todayLine);
+        const todayLabel = document.createElementNS(ns, "text");
+        todayLabel.setAttribute("x", xToday + S(4));
+        todayLabel.setAttribute("y", paddingTop - S(5));
+        todayLabel.setAttribute("fill", "red");
+        todayLabel.style.fontSize = F(11);
+        todayLabel.textContent = "Сегодня";
+        svg.appendChild(todayLabel);
+      }
+
+      const backRep = Number(task._back_rep) || 0;
+      const backlogWidth = S(60);
+      if (backRep > 0) {
+        const backlogRect = document.createElementNS(ns, "rect");
+        backlogRect.setAttribute("x", xToday - backlogWidth);
+        backlogRect.setAttribute("y", y);
+        backlogRect.setAttribute("width", backlogWidth);
+        backlogRect.setAttribute("height", barHeight);
+        backlogRect.setAttribute("rx", S(4));
+        backlogRect.setAttribute("fill", "#E2ADAC");
+        backlogRect.setAttribute("fill-opacity", "0.6");
+        backlogRect.setAttribute("class", "backlog-bar");
+        svg.appendChild(backlogRect);
+        const backlogtext = document.createElementNS(ns, "text");
+        backlogtext.setAttribute("x", xToday - backlogWidth);
+        backlogtext.setAttribute("y", y + barHeight / 3);
+        backlogtext.setAttribute("class", "backlog-text");
+        backlogtext.style.fontSize = F(10);
+        const backLabel = document.createElementNS(ns, "tspan");
+        backLabel.setAttribute("x", xToday - backlogWidth);
+        backLabel.setAttribute("dy", 0);
+        backLabel.textContent = "Отставание:";
+        const backValueLine = document.createElementNS(ns, "tspan");
+        backValueLine.setAttribute("x", xToday - backlogWidth);
+        backValueLine.setAttribute("dy", "1.4em");
+        backValueLine.textContent = typeof backRep === 'number' ? `${backRep.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ${unit}` : backRep;
+        backlogtext.appendChild(backLabel);
+        backlogtext.appendChild(backValueLine);
+        svg.appendChild(backlogtext);
+      }
+
+      const forwRep = Number(task._forw_rep) || 0;
+      const forwlogWidth = S(60);
+      if (forwRep > 0) {
+        const forwlogRect = document.createElementNS(ns, "rect");
+        forwlogRect.setAttribute("x", xToday);
+        forwlogRect.setAttribute("y", y);
+        forwlogRect.setAttribute("width", forwlogWidth);
+        forwlogRect.setAttribute("height", barHeight);
+        forwlogRect.setAttribute("rx", S(4));
+        forwlogRect.setAttribute("fill", "#4CAF50");
+        forwlogRect.setAttribute("fill-opacity", "0.7");
+        forwlogRect.setAttribute("class", "backlog-bar");
+        svg.appendChild(forwlogRect);
+        const forwlogtext = document.createElementNS(ns, "text");
+        forwlogtext.setAttribute("x", xToday - backlogWidth / 2);
+        forwlogtext.setAttribute("y", y + barHeight / 3);
+        forwlogtext.setAttribute("text-anchor", "start");
+        forwlogtext.setAttribute("fill", "#1f2937");
+        forwlogtext.setAttribute("font-weight", "600");
+        forwlogtext.style.fontSize = F(10);
+
+        const forwLabel = document.createElementNS(ns, "tspan");
+        forwLabel.setAttribute("x", xToday + S(10));
+        forwLabel.setAttribute("dy", 0);
+        forwLabel.textContent = "Опережение:";
+        const forwValueLine = document.createElementNS(ns, "tspan");
+        forwValueLine.setAttribute("x", xToday + S(10));
+        forwValueLine.setAttribute("dy", "1.4em");
+        forwValueLine.textContent = typeof forwRep === 'number' ? `${forwRep.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ${unit}` : forwRep;
+        forwlogtext.appendChild(forwLabel);
+        forwlogtext.appendChild(forwValueLine);
+        svg.appendChild(forwlogtext);
+      }
+
+      const conAnchor = xToday - x;
+      const offsetPos = S(150);
+      const anchorFact = (conAnchor < offsetPos) ? "end" : "start";
+      const textColFact = (conAnchor < offsetPos) ? "#182633" : "white";
+      const xposFact = (conAnchor < offsetPos) ? (x - S(20)) : (x + S(10));
+
+      const factValue = task._fact_rep !== undefined ? task._fact_rep : "—";
+      const factText = document.createElementNS(ns, "text");
+      if (factValue > 0) {
+        factText.setAttribute("x", xposFact);
+        factText.setAttribute("y", y + barHeight / 3);
+        factText.setAttribute("text-anchor", anchorFact);
+        factText.setAttribute("fill", textColFact);
+        factText.setAttribute("font-weight", "600");
+        factText.style.fontSize = F(11);
+        const factLabel = document.createElementNS(ns, "tspan");
+        factLabel.setAttribute("dy", 0);
+        factLabel.textContent = "Выполнено:";
+        const factValueLine = document.createElementNS(ns, "tspan");
+        factValueLine.setAttribute("x", xposFact);
+        factValueLine.setAttribute("dy", "1.4em");
+        factValueLine.textContent = typeof factValue === 'number' ? `${factValue.toLocaleString('ru-RU')} ${unit}` : factValue;
+        factText.appendChild(factLabel);
+        factText.appendChild(factValueLine);
+        svg.appendChild(factText);
+      }
+    });
   }
 
-
-
-  months.forEach((m, i) => {
-
-    const startOffset = Math.floor((m.start - minDate) / (24 * 60 * 60 * 1000));
-
-    const endOffset = Math.floor((m.end - minDate) / (24 * 60 * 60 * 1000)) + 1;
-
-    const xStart = paddingLeft2 + (startOffset / totalDays) * chartWidth;
-
-    const xEnd = paddingLeft2 + (endOffset / totalDays) * chartWidth;
-
-    const xMid = (xStart + xEnd) / 2;
-
-
-
-    const label = document.createElementNS(ns, "text");
-
-    label.setAttribute("x", xMid);
-
-    label.setAttribute("y", paddingTop - 35);
-
-    label.setAttribute("text-anchor", "middle");
-
-    label.setAttribute("class", "month-label");
-
-    // label.setAttribute("font-size", "12");
-
-    // label.setAttribute("font-weight", "bold");
-
-    // label.setAttribute("fill", "white");
-
-    label.textContent = m.label;
-
-    // label.textContent = "test";
-
-    svg.appendChild(label);
-
-
-
-
-
-    if (i > 0) {
-
-      const divider = document.createElementNS(ns, "line");
-
-      divider.setAttribute("x1", xStart);
-
-      divider.setAttribute("y1", paddingTop - 20);
-
-      divider.setAttribute("x2", xStart);
-
-      divider.setAttribute("y2", height - paddingBottom);
-
-      divider.setAttribute("stroke", "#9ca3af");
-
-      divider.setAttribute("stroke-width", "1.5");
-
-      svg.appendChild(divider);
-
-    }
-
-  });
-
-
-
-  ///////////////////////////////////////////////////////
-
-  // ----- ПОДПИСИ НЕДЕЛЬ СВЕРХУ -----
-
-  // for (let w = startWeek.week; w <= endWeek.week + 1; w++) {
-
-  //   weeks.push(w);
-
-  // }
-
-  const cursorDate = new Date(minDate);
-
-
-
-  while (cursorDate <= maxDate) {
-
-    const wk = getWeekAndYear(cursorDate.toISOString().split('T')[0]);
-
-    weeks.push(wk.week);
-
-    cursorDate.setDate(cursorDate.getDate() + 7);
-
-  }
-
-
-
-  if (weeks[weeks.length - 1] !== result.maxEndWeek.week) {
-
-    weeks.push(result.maxEndWeek.week);
-
-  }
-
-
-
-  weeks.forEach((week, i) => {
-
-    const x = paddingLeft2 + (i / (weeks.length - 1)) * chartWidth;
-
-
-
-    const label = document.createElementNS(ns, "text");
-
-    label.setAttribute("x", x);
-
-    label.setAttribute("y", paddingTop - 15);
-
-    label.setAttribute("text-anchor", "middle");
-
-    label.setAttribute("class", "bar-label");
-
-    // label.setAttribute("font-size", "11");
-
-    // label.setAttribute("fill", "#666");
-
-    label.textContent = `${week} нед.`;
-
-    svg.appendChild(label);
-
-
-
-    if (i > 0) {
-
-      const gridLine = document.createElementNS(ns, "line");
-
-      gridLine.setAttribute("x1", x);
-
-      gridLine.setAttribute("y1", paddingTop);
-
-      gridLine.setAttribute("x2", x);
-
-      gridLine.setAttribute("y2", height - paddingBottom);
-
-      gridLine.setAttribute("class", "week-gridLine");
-
-      svg.appendChild(gridLine);
-
-    }
-
-  });
-
-
-
-
-
-  // ----- ОТРИСОВКА ЗАДАЧ -----
-
-  tasks.forEach((task, i) => {
-
-    const y = paddingTop + 20 + i * (barHeight + gap);
-
-
-
-    // Вычисляем позицию на временной шкале
-
-    const startDate = new Date(task.start);
-
-    const endDate = new Date(task.end);
-
-    const startOffset = Math.floor((startDate - minDate) / (24 * 60 * 60 * 1000));
-
-    const duration = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1;
-
-    const x = paddingLeft2 + (startOffset / totalDays) * chartWidth;
-
-    const barWidth = (duration / totalDays) * chartWidth;
-
-
-
-    // ----- Получаем unit для текущей задачи -----
-
-    const unit = task.unit || "";
-
-
-
-    // добавим чередующиеся строки фона
-
-    const background_task = document.createElementNS(ns, "rect");
-
-    const background_fill = task.sorttask % 2 === 0 ? "#F7F8FA" : "#B8C1CE";
-
-    background_task.setAttribute("x", 0);
-
-    background_task.setAttribute("y", y);
-
-    background_task.setAttribute("width", col5X - 10);
-
-    background_task.setAttribute("height", barHeight);
-
-    background_task.setAttribute("fill", background_fill);
-
-    background_task.setAttribute("rx", 4);
-
-    // background_task.setAttribute("stroke", "#4CAF50");
-
-    // background_task.setAttribute("stroke-width", "1");
-
-    svg.appendChild(background_task);
-
-
-
-    const progress_compl = task._proj_plan ? Math.min(task.completion, 1) : 0;
-
-    const completeColor = progress_compl > 0.95 ? "green" : "#182633"
-
-    // ----- 1. номер по порядку-----
-
-    const num = document.createElementNS(ns, "text");
-
-    num.setAttribute("x", 5);
-
-    num.setAttribute("y", y + barHeight / 2 + 4);
-
-    num.setAttribute("text-anchor", "start");
-
-    num.setAttribute("class", "bar-label");
-
-    num.textContent = task.sorttask || "0";
-
-    svg.appendChild(num);
-
-
-
-    // ----- 1. НАЗВАНИЕ ЗАДАЧИ -----
-
-    const label = document.createElementNS(ns, "text");
-
-    label.setAttribute("x", 30);
-
-    label.setAttribute("y", y + barHeight / 2 + 4);
-
-    label.setAttribute("text-anchor", "start");
-
-    label.setAttribute("class", "bar-label-task");
-
-    label.style.setProperty("--complete-color", completeColor)
-
-    label.textContent = task.task || "—";
-
-    svg.appendChild(label);
-
-
-
-    // ----- 2. ИСПОЛНИТЕЛЬ -----
-
-    const executor = document.createElementNS(ns, "text");
-
-    executor.setAttribute("x", col2X);
-
-    executor.setAttribute("y", y + barHeight / 2 + 4);
-
-    executor.setAttribute("text-anchor", "start");
-
-    executor.setAttribute("class", "bar-label-other");
-
-    executor.style.setProperty("--complete-color", completeColor)
-
-    executor.textContent = task.executor || "—";
-
-    svg.appendChild(executor);
-
-
-
-    // ----- 3. ПЛАН (_proj_plan) с unit из задачи -----
-
-    const planValue = task._proj_plan !== undefined ? task._proj_plan : "—";
-
-    const planText = document.createElementNS(ns, "text");
-
-    planText.setAttribute("x", col3X);
-
-    planText.setAttribute("y", y + barHeight / 2 + 4);
-
-    planText.setAttribute("text-anchor", "start");
-
-    planText.setAttribute("class", "bar-label-other");
-
-    planText.style.setProperty("--complete-color", completeColor)
-
-    planText.textContent = typeof planValue === 'number' ? `${planValue.toLocaleString('ru-RU')} ${unit}` : planValue;
-
-    svg.appendChild(planText);
-
-
-
-    // ----- 4. ОСТАТОК (_proj_rest) с unit из задачи -----
-
-    const restValue = task._proj_rest !== undefined ? task._proj_rest : "—";
-
-    const restText = document.createElementNS(ns, "text");
-
-    restText.setAttribute("x", col4X);
-
-    restText.setAttribute("y", y + barHeight / 2 + 4);
-
-    restText.setAttribute("text-anchor", "start");
-
-    restText.setAttribute("class", "bar-label-other");
-
-    restText.style.setProperty("--complete-color", completeColor)
-
-    restText.textContent = typeof restValue === 'number' ? `${restValue.toLocaleString('ru-RU')} ${unit}` : restValue;
-
-    svg.appendChild(restText);
-
-
-
-    // процент выполнения фон
-
-    const compl = document.createElementNS(ns, "rect");
-
-    compl.setAttribute("x", col5X);
-
-    compl.setAttribute("y", y);
-
-    compl.setAttribute("width", col5X - col4X);
-
-    compl.setAttribute("height", barHeight);
-
-    compl.setAttribute("rx", 4);
-
-    compl.setAttribute("fill", "#f3f4f6");
-
-    compl.setAttribute("stroke", "#4CAF50");
-
-    compl.setAttribute("stroke-width", "1");
-
-    svg.appendChild(compl);
-
-
-
-    // процент выполнения  (заполнение)
-
-    // const progress_compl = task._proj_plan ? Math.min(task.completion, 1) : 0;
-
-    const fillRect_compl = document.createElementNS(ns, "rect");
-
-    fillRect_compl.setAttribute("x", col5X);
-
-    fillRect_compl.setAttribute("y", y);
-
-    fillRect_compl.setAttribute("width", (col5X - col4X) * progress_compl);
-
-    fillRect_compl.setAttribute("height", barHeight);
-
-    fillRect_compl.setAttribute("rx", 4);
-
-    fillRect_compl.setAttribute("class", "bar-completion");
-
-    // fillRect_compl.setAttribute("fill", "#4CAF50");
-
-    svg.appendChild(fillRect_compl);
-
-
-
-    // ----- процент выполнения пояснение -----
-
-    // const complValue = task.completion !== undefined ? task.completion : "—";
-
-    const complText = document.createElementNS(ns, "text");
-
-    complText.setAttribute("x", col5X + (col5X - col4X) / 2);
-
-    complText.setAttribute("y", y + barHeight / 2 + 4);
-
-    complText.setAttribute("class", "completion-text");
-
-    complText.textContent = typeof progress_compl === 'number' ? `${progress_compl * 100}%` : progress_compl;
-
-    svg.appendChild(complText);
-
-
-
-    // ----- ГРАФИК (столбики Ганта) -----
-
-    // Плановая длительность (фон)
-
-    const bgRect = document.createElementNS(ns, "rect");
-
-    bgRect.setAttribute("x", x);
-
-    bgRect.setAttribute("y", y);
-
-    bgRect.setAttribute("width", barWidth);
-
-    bgRect.setAttribute("height", barHeight);
-
-    bgRect.setAttribute("rx", 4);
-
-    bgRect.setAttribute("class", "bar-plan");
-
-    svg.appendChild(bgRect);
-
-
-
-    // Фактическая длительность (заполнение)
-
-    // const progress = task._proj_plan ? Math.min(task._proj_plan / 10, 1) : 0.7;
-
-    const progress = task._proj_plan ? Math.min(task.completion, 1) : 0;
-
-    const fillRect = document.createElementNS(ns, "rect");
-
-    fillRect.setAttribute("x", x);
-
-    fillRect.setAttribute("y", y);
-
-    fillRect.setAttribute("width", barWidth * progress);
-
-    fillRect.setAttribute("height", barHeight);
-
-    fillRect.setAttribute("rx", 4);
-
-    fillRect.setAttribute("class", "bar");
-
-    fillRect.setAttribute("fill-opacity", progress > 0.8 ? 1 : 0.8);
-
-    svg.appendChild(fillRect);
-
-
-
-
-
-
-
-    const todayOffset = Math.floor((todayDateDt - minDate) / (24 * 60 * 60 * 1000));
-
-    const xToday = paddingLeft2 + (todayOffset / totalDays) * chartWidth;
-
-
-
-    if (todayDateDt >= minDate && todayDateDt <= maxDate) {
-
-      const todayLine = document.createElementNS(ns, "line");
-
-      todayLine.setAttribute("x1", xToday);
-
-      todayLine.setAttribute("y1", paddingTop - 20);
-
-      todayLine.setAttribute("x2", xToday);
-
-      todayLine.setAttribute("y2", height - paddingBottom);
-
-      todayLine.setAttribute("stroke", "red");
-
-      todayLine.setAttribute("stroke-width", "1.5");
-
-      todayLine.setAttribute("stroke-dasharray", "4,4");
-
-      svg.appendChild(todayLine);
-
-
-
-      const todayLabel = document.createElementNS(ns, "text");
-
-      todayLabel.setAttribute("x", xToday + 4);
-
-      todayLabel.setAttribute("y", paddingTop - 5);
-
-      todayLabel.setAttribute("font-size", 11);
-
-      todayLabel.setAttribute("fill", "red");
-
-      // todayLabel.setAttribute("y1", paddingTop - 25);
-
-
-
-      todayLabel.textContent = "Сегодня";
-
-      svg.appendChild(todayLabel);
-
-
-
-    }
-
-
-
-    //// добавляем отставание от МСГ
-
-    const backRep = Number(task._back_rep) || 0;
-
-    const backlogWidth = 60;
-
-    if (backRep > 0) {
-
-      const backlogRect = document.createElementNS(ns, "rect");
-
-      backlogRect.setAttribute("x", xToday - backlogWidth)
-
-      backlogRect.setAttribute("y", y);
-
-      backlogRect.setAttribute("width", backlogWidth);
-
-      backlogRect.setAttribute("height", barHeight);
-
-      backlogRect.setAttribute("rx", 4);
-
-      backlogRect.setAttribute("fill", "#E2ADAC");
-
-      backlogRect.setAttribute("fill-opacity", "0.6");
-
-      backlogRect.setAttribute("class", "backlog-bar");
-
-      svg.appendChild(backlogRect);
-
-
-
-      const backlogtext = document.createElementNS(ns, "text");
-
-
-
-      backlogtext.setAttribute("x", xToday - backlogWidth)
-
-      backlogtext.setAttribute("y", y + barHeight / 3);
-
-      backlogtext.setAttribute("class", "backlog-text");
-
-      // backlogtext.setAttribute("text-anchor", "middle");
-
-      // backlogtext.setAttribute("font-size", "10");
-
-      // backlogtext.setAttribute("fill", "#1f2937");
-
-      // backlogtext.textContent=typeof backRep === 'number' ? `${backRep.toLocaleString('ru-RU', {maximumFractionDigits:0})} ${unit}` : backRep;
-
-
-
-      const backLabel = document.createElementNS(ns, "tspan");
-
-      backLabel.setAttribute("x", xToday - backlogWidth);
-
-      backLabel.setAttribute("dy", 0)
-
-      backLabel.textContent = "Отставание:"
-
-
-
-      const backValueLine = document.createElementNS(ns, "tspan");
-
-      backValueLine.setAttribute("x", xToday - backlogWidth);
-
-      backValueLine.setAttribute("dy", "1.4em")
-
-      backValueLine.textContent = typeof backRep === 'number' ? `${backRep.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ${unit}` : backRep;
-
-
-
-      backlogtext.appendChild(backLabel);
-
-      backlogtext.appendChild(backValueLine);
-
-
-
-      svg.appendChild(backlogtext);
-
-    }
-
-
-
-    //// добавляем опережение плана МСГ
-
-    const forwRep = Number(task._forw_rep) || 0;
-
-    const forwlogWidth = 60;
-
-    if (forwRep > 0) {
-
-      const forwlogRect = document.createElementNS(ns, "rect");
-
-      forwlogRect.setAttribute("x", xToday)
-
-      forwlogRect.setAttribute("y", y);
-
-      forwlogRect.setAttribute("width", forwlogWidth);
-
-      forwlogRect.setAttribute("height", barHeight);
-
-      forwlogRect.setAttribute("rx", 4);
-
-      forwlogRect.setAttribute("fill", "#4CAF50");
-
-      forwlogRect.setAttribute("fill-opacity", "0.7");
-
-      forwlogRect.setAttribute("class", "backlog-bar");
-
-      svg.appendChild(forwlogRect);
-
-
-
-      const forwlogtext = document.createElementNS(ns, "text");
-
-
-
-      forwlogtext.setAttribute("x", xToday - backlogWidth / 2)
-
-      forwlogtext.setAttribute("y", y + barHeight / 3);
-
-      forwlogtext.setAttribute("text-anchor", "start");
-
-      forwlogtext.setAttribute("font-size", "10");
-
-      forwlogtext.setAttribute("fill", "#1f2937");
-
-      forwlogtext.setAttribute("font-weight", "600");
-
-      // backlogtext.textContent=typeof backRep === 'number' ? `${backRep.toLocaleString('ru-RU', {maximumFractionDigits:0})} ${unit}` : backRep;
-
-
-
-      const forwLabel = document.createElementNS(ns, "tspan");
-
-      forwLabel.setAttribute("x", xToday + 10);
-
-      forwLabel.setAttribute("dy", 0)
-
-      forwLabel.textContent = "Опережение:"
-
-
-
-      const forwValueLine = document.createElementNS(ns, "tspan");
-
-      forwValueLine.setAttribute("x", xToday + 10);
-
-      forwValueLine.setAttribute("dy", "1.4em")
-
-      forwValueLine.textContent = typeof forwRep === 'number' ? `${forwRep.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ${unit}` : forwRep;
-
-
-
-      forwlogtext.appendChild(forwLabel);
-
-      forwlogtext.appendChild(forwValueLine);
-
-
-
-      svg.appendChild(forwlogtext);
-
-    }
-
-
-
-    ////// дополнительные настройки для меток Выполнение-факт
-
-    const conAnchor = xToday - x;
-
-    const offsetPos = 150
-
-    const anchorFact = (conAnchor < offsetPos) ? "end" : "start";
-
-    const textColFact = (conAnchor < offsetPos) ? "#182633" : "white";
-
-    const xposFact = (conAnchor < offsetPos) ? (x - 20) : (x + 10);
-
-
-
-    //// Выполнено в физических единицах:
-
-    // const complNatText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-
-    const factValue = task._fact_rep !== undefined ? task._fact_rep : "—";
-
-    const factText = document.createElementNS(ns, "text");
-
-    if (factValue > 0) {
-
-      factText.setAttribute("x", xposFact);
-
-      factText.setAttribute("y", y + barHeight / 3);
-
-      factText.setAttribute("text-anchor", anchorFact);
-
-      factText.setAttribute("font-size", "11");
-
-      factText.setAttribute("fill", textColFact);
-
-      factText.setAttribute("font-weight", "600");
-
-
-
-      const factLabel = document.createElementNS(ns, "tspan");
-
-      // factLabel.setAttribute("x", x+10);
-
-      factLabel.setAttribute("dy", 0)
-
-      factLabel.textContent = "Выполнено:"
-
-
-
-      const factValueLine = document.createElementNS(ns, "tspan");
-
-      factValueLine.setAttribute("x", xposFact);
-
-      factValueLine.setAttribute("dy", "1.4em")
-
-      factValueLine.textContent = typeof factValue === 'number' ? `${factValue.toLocaleString('ru-RU')} ${unit}` : factValue;
-
-
-
-      factText.appendChild(factLabel);
-
-      factText.appendChild(factValueLine);
-
-
-
-      // factText.textContent = typeof factValue === 'number' ? `Факт: ${factValue.toLocaleString('ru-RU')} ${unit}` : factValue;
-
-      // factText.textContent = typeof factValue === 'number' ? `Факт: ${factValue.toLocaleString('ru-RU')} ${unit}` : factValue;
-
-      svg.appendChild(factText);
-
-    }
-
-
-
-
-
-  });
-
+let lastGanttData = null;
+
+function renderGanttChartResponsive(data) {
+  lastGanttData = data;
+  renderGanttChart(data);
 }
+
+const ganttContainer = document.getElementById("gantt-chart").parentElement;
+let resizeTimer;
+new ResizeObserver(() => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (lastGanttData) renderGanttChart(lastGanttData);
+  }, 100); // debounce so a drag-resize doesn't redraw hundreds of times
+}).observe(ganttContainer);
 
 
 
