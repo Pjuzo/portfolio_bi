@@ -231,7 +231,7 @@ nav a:hover {
 }
 /* Горизонтальные столбики */
 .bar {
-  transition: width 0.8s ease;  /* ← анимируем ширину, а не высоту */
+  transition: width 0.8s ease;  
   /* fill: #003153; */
   fill: #3E5F8A;
 }

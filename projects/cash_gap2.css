@@ -125,7 +125,7 @@ input {
     margin-top: 6px
 }
 
-/* ---------- Header ---------- */
+
 .site-header {
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -173,7 +173,7 @@ nav a:hover {
     max-width: 640px;
 }
 
-/* ---------- Sections ---------- */
+
 .section {
     padding: 40px 0;
     border-top: 1px solid var(--border);
@@ -183,7 +183,7 @@ nav a:hover {
     margin-bottom: 20px;
 }
 
-/* ---------- Project detail pages ---------- */
+
 .back-link {
     color: var(--text-muted);
     text-decoration: none;
