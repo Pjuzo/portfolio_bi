@@ -32,7 +32,7 @@ body {
     padding: 0 20px;
 }
 
-/* ---------- Header ---------- */
+
 .site-header {
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -72,7 +72,7 @@ nav a:hover {
   color: var(--text-muted);
   max-width: 640px;
 }
-/* ---------- Sections ---------- */
+
 .section {
   padding: 40px 0;
   border-top: 1px solid var(--border);
@@ -117,14 +117,7 @@ nav a:hover {
   /* text-wrap: balance; */
 }
 
-/* .detail-hero .detail-summary {
-  max-width: 100vw;              
-  margin: auto;
-  padding: 26px;
-  color: var(--text-muted);
-  margin-top: 12px;
-  text-wrap: balance;
-} */
+
 /* ---------- Вставка для project_monitor ---------- */
 * {
   box-sizing: border-box;
@@ -146,9 +139,9 @@ nav a:hover {
 }
 
 .left-column .chart {
-  flex: 1 1 0;          /* was: flex: 1 — same effect, more explicit */
-  min-height: 0;        /* NEW — critical */
-  min-width: 0;          /* NEW */
+  flex: 1 1 0;          
+  min-height: 0;        
+  min-width: 0;         
 }
 
 .chart {
@@ -162,12 +155,12 @@ nav a:hover {
   color: var(--color-text-third);
   font-size: 14px;
   min-width: 0;
-  min-height: 0;         /* NEW */
+  min-height: 0;         
   padding: 12px;
-  overflow: hidden;      /* was: visible — hidden now that height is real and bounded */
+  overflow: hidden;     
 }
 
-/* Right column - 60%, 1 big + 1 small */
+
 .right-column {
   width: 60%;
   display: flex;
@@ -177,17 +170,11 @@ nav a:hover {
 }
 .right-column .chart-big {
   flex: 2;
-  /* adjust ratio as needed */
 }
 .right-column .chart-small {
   flex: 1;
 }
-/* .chart-label {
-  padding: 10px 10px;
-  color: var(--color-text-secondary);
-  font-size: 16px;
-  font-weight: 400;
-  } */
+
 .project-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -203,15 +190,15 @@ nav a:hover {
 .detail-chart-block {
   width: 100%;
   min-width: 0;
-  min-height: 0;          /* NEW */
-  display: flex;           /* NEW — needs to be a flex column itself */
-  flex-direction: column;  /* NEW */
-  flex: 1 1 auto;           /* NEW — fills the .chart after the title */
+  min-height: 0;          
+  display: flex;           
+  flex-direction: column;  
+  flex: 1 1 auto;           
 }
 
 .chart-label {
   margin: 0 0 8px 0;
-  flex: 0 0 auto;          /* NEW — title keeps its own size, doesn't get squeezed */
+  flex: 0 0 auto;          
 }
 
 #completion-chart,
@@ -219,10 +206,10 @@ nav a:hover {
 #cost-chart {
   display: block;
   width: 100%;
-  height: 100%;      /* was: auto */
+  height: 100%;     
   min-width: 0;
-  min-height: 0;      /* NEW */
-  flex: 1 1 auto;      /* NEW — SVG itself is the flexible part inside detail-chart-block */
+  min-height: 0;     
+  flex: 1 1 auto;      
 }
 
 .detail-chart-block h3 {

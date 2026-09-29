@@ -158,32 +158,13 @@ const act_data = {
     }
   ]
 };
-// function calculateCompletion() {
-// const completion =
-// constr_completion_data.projects
-// .map(project => {
-// const plan = project.plan_compl;
-// const fact = project.fact_compl;
-// return {
-// ...project,
-// // index,
-// // project_num:
-// // project[index],
-// plan,
-// fact
-// };
-// });
-// return {
-// completion
-// };
-// }
-// console.log(calculateCompletion());
+
 const proj_colors = {
-  ColorTotal: "#9AA6B9", // Light grey for total
-  ColorFact: "#49678D", // blue
-  ColorPlan: "#007FFF", // light blue
+  ColorTotal: "#9AA6B9",
+  ColorFact: "#49678D",
+  ColorPlan: "#007FFF",
   ColorPlan2: "#9AA6B9",
-  ColorText: "#23415A", // Dark blue
+  ColorText: "#23415A",
   negative: '#e31a1c',
   text_color: '#3E5F8A',
   ColorRatio: "#e0703a",
@@ -205,25 +186,23 @@ function render_project_completion_chart(data, options = {}) {
 
   const svg = document.getElementById("completion-chart");
   const containerWidth = svg.parentElement.clientWidth;
-  const containerHeight = svg.parentElement.clientHeight;   // NEW
+  const containerHeight = svg.parentElement.clientHeight;   
 
   const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
   const width = options.width || containerWidth;
-  const height = options.height || containerHeight;          
+  const height = options.height || containerHeight;
 
   if (!projects || projects.length === 0) {
     console.warn('no data');
     return;
   }
 
-  // ---- horizontal factors: still width-driven (bar length, label column) ----
   const paddingLeft = clamp(width * 0.01, 8, 16);
   const paddingRight = clamp(width * 0.02, 5, 30);
   const barAreaRatio = options.barAreaRatio || 0.95;
   const gap_label = clamp(width * 0.2, 30, 110);
   const cornerRadius = clamp(width * 0.008, 4, 6);
 
-  // ---- vertical factors: now height-driven, not width-driven ----
   const n = projects.length;
   const legendSize = clamp(height * 0.05, 9, 14);
   const legendRowHeight = legendSize + clamp(height * 0.04, 8, 16);
@@ -231,10 +210,10 @@ function render_project_completion_chart(data, options = {}) {
   const paddingBottom = clamp(height * 0.01, 2, 8);
 
   const availableRowSpace = height - paddingTop - paddingBottom;
-  const rowGap = availableRowSpace / n;          // total vertical budget per project
-  const barHeight = clamp(rowGap * 0.35, 10, 21);  // each bar's thickness is a slice of that budget
-  const gap_y = clamp(rowGap * 0.06, 2, 8);       // gap between plan bar and fact bar within a row
-  const gap = rowGap - barHeight * 2 - gap_y;      // remaining space = gap between project groups
+  const rowGap = availableRowSpace / n;          
+  const barHeight = clamp(rowGap * 0.35, 10, 21);  
+  const gap_y = clamp(rowGap * 0.06, 2, 8);       
+  const gap = rowGap - barHeight * 2 - gap_y;     
 
   const fontSizeLabel = clamp(Math.min(width, height) * 0.02, 9, 14);
   const fontSizeValue = clamp(Math.min(width, height) * 0.02, 9, 13);
@@ -251,7 +230,7 @@ function render_project_completion_chart(data, options = {}) {
   // console.log('', )
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");   // NEW — width & height both match container exactly
+  svg.setAttribute("preserveAspectRatio", "none");   
   svg.removeAttribute("width");
   svg.removeAttribute("height");
   svg.innerHTML = "";
@@ -293,7 +272,7 @@ function render_project_completion_chart(data, options = {}) {
   legend_fact_text.textContent = "факт";
   svg.appendChild(legend_fact_text);
 
-  // ---- bars ----
+
   projects.forEach((project, i) => {
     const y = paddingTop + i * (barHeight * 2 + gap_y + gap);
     const x = paddingLeft;
@@ -395,7 +374,7 @@ function render_term_delay_chart(data, options = {}) {
   const containerHeight = svg.parentElement.clientHeight;   // NEW
   const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
   const width = options.width || containerWidth;
-  const height = options.height || containerHeight;          // NEW — trust the container
+  const height = options.height || containerHeight;         
 
   if (!projects || projects.length === 0) {
     console.warn('no data');
@@ -404,9 +383,9 @@ function render_term_delay_chart(data, options = {}) {
 
   const paddingLeft = clamp(width * 0.01, 8, 16);
   const paddingRight = clamp(width * 0.09, 40, 100);
-  const paddingBottom = clamp(height * 0.09, 10, 24);          // now height-driven
+  const paddingBottom = clamp(height * 0.09, 10, 24);         
   const gap_label = clamp(width * 0.11, 80, 150);
-  const fontSizeLabel = clamp(Math.min(width, height) * 0.03, 8, 12);   // scale off the smaller dimension
+  const fontSizeLabel = clamp(Math.min(width, height) * 0.03, 8, 12);   
   const fontSizeValue = clamp(Math.min(width, height) * 0.026, 9, 14);
   const fontSizeAxis = clamp(Math.min(width, height) * 0.022, 5, 8);
   const legendSize = clamp(height * 0.05, 12, 16);
@@ -417,12 +396,12 @@ function render_term_delay_chart(data, options = {}) {
   const plotLeft = paddingLeft + gap_label;
   const plotWidth = width - plotLeft - paddingRight;
 
-  // ---- row spacing now derived FROM available height, not the reverse ----
+  
   const n = projects.length;
   const availableRowSpace = height - paddingTop - paddingBottom;
-  const rowGap = availableRowSpace / n;                        // NEW — each row's total vertical budget
-  const barHeight = clamp(rowGap * 0.12, 2, 5);                 // bar thickness is a slice of that budget
-  const gap = rowGap;                                           // "gap" now literally means row pitch
+  const rowGap = availableRowSpace / n;                        
+  const barHeight = clamp(rowGap * 0.12, 2, 5);               
+  const gap = rowGap;                                           
 
   const plotBottom = paddingTop + n * gap;
   const ns = "http://www.w3.org/2000/svg";
@@ -430,11 +409,9 @@ function render_term_delay_chart(data, options = {}) {
   const colorPlan = proj_colors.ColorPlan || "#4a7fd1";
   const colorDelay = proj_colors.negative || "#d64545";
   const colorOnTime = proj_colors.ColorOnTime || "#3fa34d";
-  // height is no longer computed — it IS containerHeight already
 
   const msPerDay = 1000 * 60 * 60 * 24;
 
-  // ---- parse dates, compute time scale ----
   const parsed = projects.map(p => ({
     ...p,
     planTs: new Date(p.plan_dt).getTime(),
@@ -444,7 +421,7 @@ function render_term_delay_chart(data, options = {}) {
   let minTs = Math.min(...allTs);
   let maxTs = Math.max(...allTs);
   const range = maxTs - minTs;
-  const pad = Math.max(range * 0.08, msPerDay * 15); // never a zero-width scale
+  const pad = Math.max(range * 0.08, msPerDay * 15); 
   minTs -= pad;
   maxTs += pad;
   const xScale = (ts) => plotLeft + ((ts - minTs) / (maxTs - minTs)) * plotWidth;
@@ -452,11 +429,11 @@ function render_term_delay_chart(data, options = {}) {
   const formatDate = (ts) => new Date(ts).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");              // NEW — width & height both match container exactly now
+  svg.setAttribute("preserveAspectRatio", "none");              
   svg.removeAttribute("width");
   svg.removeAttribute("height");
   svg.innerHTML = "";
-  // ---- legend ----
+
   const legendY = (legendRowHeight - legendSize) / 2;
   const legendPlan = document.createElementNS(ns, "rect");
   legendPlan.setAttribute("x", plotLeft);
@@ -490,15 +467,9 @@ function render_term_delay_chart(data, options = {}) {
   legendDelayText.textContent = "просрочка";
   svg.appendChild(legendDelayText);
   const legendW2 = legendW1 * 1.1 + legendSize + 6 + fontSizeLabel * 5;
-  // const legendMarker = document.createElementNS(ns, "rect");
+  
   const mkY = legendY + legendSize * 0.25;
-  // legendMarker.setAttribute("x", legendW2 + legendSize * 0.25);
-  // legendMarker.setAttribute("y", mkY - legendSize * 0.25);
-  // legendMarker.setAttribute("width", legendSize * 0.5);
-  // legendMarker.setAttribute("height", legendSize * 0.5);
-  // legendMarker.setAttribute("fill", colorMarker);
-  // legendMarker.setAttribute("transform", `rotate(45 ${legendW2 + legendSize * 0.5} ${mkY})`);
-  // svg.appendChild(legendMarker);
+
   const legendMarker = document.createElementNS(ns, "circle");
   legendMarker.setAttribute("cx", legendW2 * 1.2 + legendSize * 0.25);
   legendMarker.setAttribute("cy", mkY - legendSize * 0.25);
@@ -512,8 +483,7 @@ function render_term_delay_chart(data, options = {}) {
   legendMarkerText.setAttribute("font-size", fontSizeLabel);
   legendMarkerText.textContent = "срок план";
   svg.appendChild(legendMarkerText);
-  // ---- vertical date gridlines + axis labels ----
-  // ---- vertical date gridlines + axis labels ----
+ 
   const tickCount = 5;
   for (let t = 0; t <= tickCount; t++) {
     const ts = minTs + ((maxTs - minTs) / tickCount) * t;
@@ -528,7 +498,7 @@ function render_term_delay_chart(data, options = {}) {
     gridLine.setAttribute("stroke-opacity", 0.1);
     svg.appendChild(gridLine);
 
-    // NEW: flip anchor for the first/last tick so text stays inside the plot area
+    
     let anchor = "middle";
     if (t === 0) anchor = "start";
     else if (t === tickCount) anchor = "end";
@@ -536,7 +506,7 @@ function render_term_delay_chart(data, options = {}) {
     const tickLabel = document.createElementNS(ns, "text");
     tickLabel.setAttribute("x", x);
     tickLabel.setAttribute("y", plotBottom + fontSizeAxis + 10);
-    tickLabel.setAttribute("text-anchor", anchor);   // was: "middle" always
+    tickLabel.setAttribute("text-anchor", anchor);   
     tickLabel.setAttribute("class", "term-x-label");
     tickLabel.setAttribute("font-size", fontSizeAxis);
     tickLabel.textContent = formatTick(ts);
@@ -559,7 +529,7 @@ function render_term_delay_chart(data, options = {}) {
     label.textContent = project.project || "—";
     svg.appendChild(label);
     if (delayed) {
-      // full pill (start -> fact) drawn first in red, giving true rounded end caps
+      
       const delayLine = document.createElementNS(ns, "line");
       delayLine.setAttribute("x1", startX);
       delayLine.setAttribute("x2", factX);
@@ -569,7 +539,7 @@ function render_term_delay_chart(data, options = {}) {
       delayLine.setAttribute("stroke-width", barHeight);
       delayLine.setAttribute("stroke-linecap", "round");
       svg.appendChild(delayLine);
-      // blue overlay (start -> plan) drawn on top, covering the "within plan" portion
+      
       const planLine = document.createElementNS(ns, "line");
       planLine.setAttribute("x1", startX);
       planLine.setAttribute("x2", planX);
@@ -580,7 +550,7 @@ function render_term_delay_chart(data, options = {}) {
       planLine.setAttribute("stroke-linecap", "round");
       svg.appendChild(planLine);
     } else {
-      // on time / early: single green pill, true rounded caps at both true ends
+      
       const onTimeLine = document.createElementNS(ns, "line");
       onTimeLine.setAttribute("x1", startX);
       onTimeLine.setAttribute("x2", factX);
@@ -591,14 +561,14 @@ function render_term_delay_chart(data, options = {}) {
       onTimeLine.setAttribute("stroke-linecap", "round");
       svg.appendChild(onTimeLine);
     }
-    // circle marker at the planned date (always shown, for reference)
+    
     const marker = document.createElementNS(ns, "circle");
     marker.setAttribute("cx", planX);
     marker.setAttribute("cy", y - barHeight);
     marker.setAttribute("r", markerSize / 1.4);
     marker.setAttribute("fill", colorPlan);
     svg.appendChild(marker);
-    // fact date label, above the end of the pill
+    
     const factLabel = document.createElementNS(ns, "text");
     factLabel.setAttribute("x", factX);
     factLabel.setAttribute("y", y - barHeight / 2 - 6);
@@ -608,7 +578,7 @@ function render_term_delay_chart(data, options = {}) {
     factLabel.setAttribute("fill", delayed ? colorDelay : colorOnTime);
     factLabel.textContent = formatDate(project.factTs);
     svg.appendChild(factLabel);
-    // delay/lead delta label
+
     const deltaLabel = document.createElementNS(ns, "text");
     deltaLabel.setAttribute("x", factX);
     deltaLabel.setAttribute("y", y + barHeight / 2 + fontSizeValue);
@@ -618,7 +588,7 @@ function render_term_delay_chart(data, options = {}) {
     deltaLabel.textContent = diffDays > 0 ? `+${diffDays} дн.` : diffDays < 0 ? `${diffDays} дн.` : "on time";
     svg.appendChild(deltaLabel);
   });
-  // ---- baseline axis ----
+  
   const axisLine = document.createElementNS(ns, "line");
   axisLine.setAttribute("x1", plotLeft);
   axisLine.setAttribute("x2", width - paddingRight);
@@ -628,6 +598,8 @@ function render_term_delay_chart(data, options = {}) {
   axisLine.setAttribute("stroke-opacity", 0.2);
   svg.appendChild(axisLine);
 }
+
+
 let resizeTimerTerm;
 const termContainer = document.getElementById("term-chart").parentElement;
 const roTerm = new ResizeObserver(() => {
@@ -649,14 +621,14 @@ function render_headcount_chart(data, options = {}) {
   const containerHeight = svg.parentElement.clientHeight;   // NEW
   const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
   const width = options.width || containerWidth;
-  const height = options.height || containerHeight;          // NEW — trust the container
+  const height = options.height || containerHeight;          
 
   if (!projects || projects.length === 0) {
     console.warn('no data');
     return;
   }
 
-  // ---- horizontal factors: still width-driven ----
+
   const paddingLeft = clamp(width * 0.045, 10, 20);
   const axisGap = clamp(width * 0.02, 1, 5);
   const plotLeft = paddingLeft + axisGap;
@@ -665,7 +637,6 @@ function render_headcount_chart(data, options = {}) {
   const cornerRadius = clamp(width * 0.006, 3, 4);
   const barGapInner = clamp(width * 0.0002, 1, 4);
 
-  // ---- vertical factors: now height-driven, not width-driven ----
   const fontSizeLabel = clamp(Math.min(width, height) * 0.045, 9, 14);
   const fontSizeValue = clamp(Math.min(width, height) * 0.05, 10, 16);
   const fontSizeAxis = clamp(Math.min(width, height) * 0.035, 8, 12);
@@ -674,13 +645,13 @@ function render_headcount_chart(data, options = {}) {
 
   const legendRowHeight = legendSize + clamp(height * 0.06, 10, 20);
   const paddingTop = legendRowHeight + clamp(height * 0.05, 8, 15);
-  const paddingBottom = clamp(height * 0.09, 20, 40);   // room for project-name axis labels
+  const paddingBottom = clamp(height * 0.09, 20, 40);   
 
-  const plotHeight = height - paddingTop - paddingBottom;   // NEW — fills whatever's left, not width-guessed
+  const plotHeight = height - paddingTop - paddingBottom;   
 
   const ns = "http://www.w3.org/2000/svg";
 
-  // ---- bar scale (headcount) ----
+  
   const rawMax = Math.max(...projects.map(p => Math.max(p.plan_hc || 0, p.fact_hc || 0)));
 
   const niceMax = (() => {
@@ -697,7 +668,6 @@ function render_headcount_chart(data, options = {}) {
   })();
   const yScale = (value) => plotHeight * (value / niceMax);
 
-  // ---- ratio scale (fact/plan %), independent of the headcount scale ----
   const ratios = projects.map(p => {
     const plan = p.plan_hc || 0;
     const fact = p.fact_hc || 0;
@@ -706,16 +676,16 @@ function render_headcount_chart(data, options = {}) {
   const rawRatioMax = Math.max(...ratios, 100);
   const ratioMax = Math.ceil(rawRatioMax / 20) * 20 + 20;
   const ratioTopMargin = fontSizeValue + clamp(height * 0.04, 10, 20);
-  const ratioPlotHeight = plotHeight - ratioTopMargin;    // NEW — was plotHeight*1.4, now fits within plotHeight itself
+  const ratioPlotHeight = plotHeight - ratioTopMargin;   
   const yScaleRatio = (pct) => ratioPlotHeight * (pct / ratioMax);
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");        // NEW
+  svg.setAttribute("preserveAspectRatio", "none");        
   svg.removeAttribute("width");
   svg.removeAttribute("height");
   svg.innerHTML = "";
 
-  // ---- legend row ----
+
   const gap_label = clamp(width * 0.08, 50, 110);
   const legendY = (legendRowHeight - legendSize) / 2;
 
@@ -753,7 +723,6 @@ function render_headcount_chart(data, options = {}) {
   legend_fact_text.textContent = "факт";
   svg.appendChild(legend_fact_text);
 
-  // Ratio line legend swatch
   const ratioColor = (proj_colors.ColorPlan) || "#e0703a";
   const legendRatioX = paddingLeft + gap_label * 2;
 
@@ -783,7 +752,6 @@ function render_headcount_chart(data, options = {}) {
   legend_ratio_text.textContent = "обеспеченность %";
   svg.appendChild(legend_ratio_text);
 
-  // ---- Y-axis gridlines (headcount scale) ----
   const tickCount = 4;
   for (let t = 0; t <= tickCount; t++) {
     const value = (niceMax / tickCount) * t;
@@ -799,7 +767,7 @@ function render_headcount_chart(data, options = {}) {
     svg.appendChild(gridLine);
   }
 
-  // ---- bar groups ----
+
   const plotWidth = width - plotLeft - paddingRight;
   const groupWidth = plotWidth / projects.length;
   const barsWidth = groupWidth * barAreaRatio;
@@ -872,10 +840,10 @@ function render_headcount_chart(data, options = {}) {
     ratioPoints.push({ x: pointX, y: pointY, pct });
   });
 
-  // ---- ratio line ----
+  
   if (ratioPoints.length > 0) {
     const pathData = ratioPoints
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y*0.7}`)
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y * 0.7}`)
       .join(" ");
     const linePath = document.createElementNS(ns, "path");
     linePath.setAttribute("d", pathData);
@@ -888,7 +856,7 @@ function render_headcount_chart(data, options = {}) {
     ratioPoints.forEach((p) => {
       const marker = document.createElementNS(ns, "rect");
       marker.setAttribute("x", p.x - markerSize / 2);
-      marker.setAttribute("y", p.y*0.7 - markerSize / 2);
+      marker.setAttribute("y", p.y * 0.7 - markerSize / 2);
       marker.setAttribute("width", markerSize);
       marker.setAttribute("height", markerSize);
       marker.setAttribute("fill", ratioColor);
@@ -896,7 +864,7 @@ function render_headcount_chart(data, options = {}) {
 
       const pctText = document.createElementNS(ns, "text");
       pctText.setAttribute("x", p.x);
-      pctText.setAttribute("y", p.y*0.7 - markerSize / 2 - 4);
+      pctText.setAttribute("y", p.y * 0.7 - markerSize / 2 - 4);
       pctText.setAttribute("font-size", fontSizeValue);
       pctText.setAttribute("class", "bar-label-hc-suffic");
       pctText.textContent = `${Math.round(p.pct)}%`;
@@ -904,7 +872,6 @@ function render_headcount_chart(data, options = {}) {
     });
   }
 
-  // ---- baseline axis line ----
   const axisLine = document.createElementNS(ns, "line");
   axisLine.setAttribute("x1", plotLeft);
   axisLine.setAttribute("x2", width - paddingRight);
@@ -936,15 +903,14 @@ function render_cost_overrun_chart(data, options = {}) {
   const containerWidth = svg.parentElement.clientWidth;
   const containerHeight = svg.parentElement.clientHeight;   // NEW
   const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
-  const width = options.width || containerWidth;             
-  const height = options.height || containerHeight;           
+  const width = options.width || containerWidth;
+  const height = options.height || containerHeight;
 
   if (!projects || projects.length === 0) {
     console.warn('no data');
     return;
   }
 
-  // ---- colors ----
   const colorContract = proj_colors.ColorPlan2 || "#a9b4c2";
   const colorExpertise = proj_colors.ColorFact || "#5b6b84";
   const colorForecast = proj_colors.ColorPlan || "#1e88ff";
@@ -954,7 +920,6 @@ function render_cost_overrun_chart(data, options = {}) {
   const colorSurplus = proj_colors.ColorSurplusForecast || "#7AB67A";
   const colorSurplusTxt = proj_colors.ColorOnTime || "#228B22";
 
-  // ---- horizontal factors: still width-driven ----
   const paddingLeft = clamp(width * 0.01, 8, 16);
   const paddingRight = clamp(width * 0.02, 20, 50);
   const gap_label = clamp(width * 0.4, 50, 80);
@@ -964,7 +929,7 @@ function render_cost_overrun_chart(data, options = {}) {
   const plotLeft = paddingLeft + gap_label;
   const fmt = (n) => Math.round(n).toLocaleString('ru-RU');
 
-  // ---- derive excess/profit figures per project ----
+  
   const parsed = projects.map(p => {
     const totalExcess = Math.max(0, (p.forecast_sum || 0) - (p.expertise_sum || 0));
     const factExcess = Math.min(p.fact_excess || 0, totalExcess);
@@ -973,20 +938,20 @@ function render_cost_overrun_chart(data, options = {}) {
     return { ...p, totalExcess, factExcess, forecastOnlyExcess, totalProf };
   });
 
-  // ---- shared horizontal scale ----
+  
   const maxValue = Math.max(...parsed.flatMap(p => [p.contract_sum || 0, p.expertise_sum || 0, p.forecast_sum || 0]));
   const mainMaxWidth = (width - plotLeft - paddingRight) * 0.76;
   const scale = mainMaxWidth / maxValue;
 
-  // ---- legend: measure + assign rows BEFORE any vertical layout depends on it ----
-      const legendItems = [
-      { color: colorContract, label: "Контрактная стоимость"},
-      { color: colorExpertise, label: "После экспертизы"},
-      { color: colorForecast, label: "Прогноз стоимости"},
-      { color: colorSurplus, label: "Прибыль прогноз"},
-      // { color: colorExcessFact, label: "Убыток факт"},
-      { color: colorExcessForecast, label: "Убыток прогноз"}
-      ];
+  
+  const legendItems = [
+    { color: colorContract, label: "Контрактная стоимость" },
+    { color: colorExpertise, label: "После экспертизы" },
+    { color: colorForecast, label: "Прогноз стоимости" },
+    { color: colorSurplus, label: "Прибыль прогноз" },
+    // { color: colorExcessFact, label: "Убыток факт"},
+    { color: colorExcessForecast, label: "Убыток прогноз" }
+  ];
 
   const fontSizeLabel = clamp(Math.min(width, height) * 0.045, 9, 14);
   const fontSizeValue = clamp(Math.min(width, height) * 0.030, 8, 13);
@@ -1013,27 +978,26 @@ function render_cost_overrun_chart(data, options = {}) {
   const legendLineHeight = legendSize + clamp(height * 0.03, 6, 14);
   const legendRowHeight = legendLineHeight * legendRowCount;
 
-  // ---- vertical factors: now height-driven, not width-driven ----
+  
   const paddingTop = legendRowHeight + clamp(height * 0.04, 10, 22);
   const paddingBottom = clamp(height * 0.012, 2, 10);
 
   const n = parsed.length;
   const availableRowSpace = height - paddingTop - paddingBottom;
-  const rowGap = availableRowSpace / n;               // total vertical budget per project group
-  const barHeight = clamp(rowGap * 0.22, 6, 20);       // each of the 3 bars' thickness
-  const barGapY = clamp(rowGap * 0.04, 2, 8);          // gap between the 3 stacked bars within a group
+  const rowGap = availableRowSpace / n;               
+  const barHeight = clamp(rowGap * 0.22, 6, 20);       
+  const barGapY = clamp(rowGap * 0.04, 2, 8);          
   const groupHeight = barHeight * 3 + barGapY * 2;
-  const groupGap = rowGap - groupHeight;                // remaining space = gap between project groups
+  const groupGap = rowGap - groupHeight;                
 
-  // height is no longer computed — it IS containerHeight already
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");     // NEW
+  svg.setAttribute("preserveAspectRatio", "none");     
   svg.removeAttribute("width");
   svg.removeAttribute("height");
-  svg.innerHTML = "";   // MOVED — now clears before anything is drawn, not after the legend was built
+  svg.innerHTML = "";   
 
-  // ---- draw legend, using precomputed row assignments ----
+  
   let legendX = paddingLeft;
   let currentRow = 0;
   legendItems.forEach((item, i) => {
@@ -1064,9 +1028,9 @@ function render_cost_overrun_chart(data, options = {}) {
     legendX += legendItemWidths[i];
   });
 
-  // ---- rows ----
+
   parsed.forEach((project, i) => {
-    const groupTop = paddingTop + i * rowGap;    // NEW — was i * (groupHeight + groupGap)
+    const groupTop = paddingTop + i * rowGap;    
     const expert_forw = Math.min(project.forecast_sum || 0, project.expertise_sum || 0);
 
     const rows = [
@@ -1193,32 +1157,31 @@ function render_cost_overrun_chart(data, options = {}) {
     }
   });
 
-  // ---- summary card: total fact loss across all projects ----
-const totalFactLoss = parsed.reduce((sum, p) => sum + (p.factExcess || 0), 0);
 
-if (totalFactLoss > 0) {
+  const totalFactLoss = parsed.reduce((sum, p) => sum + (p.factExcess || 0), 0);
+
+  if (totalFactLoss > 0) {
     const cardPadding = clamp(Math.min(width, height) * 0.03, 8, 12);
     const cardFontLabel = clamp(fontSizeLabel * 0.95, 8, 13);
-    const cardFontValue = clamp(fontSizeValue , 12, 18);
+    const cardFontValue = clamp(fontSizeValue, 12, 18);
     const cardLabelText = "общий убыток по законченным строительством объектам:";
 
-    // rough width estimate for the label (wraps to 2 lines if needed) and value
     const charWidth = cardFontLabel * 0.56;
     const maxCardWidth = clamp(width * 0.32, 60, 140);
     const cardInnerWidth = maxCardWidth - cardPadding * 2;
 
-    // simple word-wrap for the label into lines that fit cardInnerWidth
+  
     const words = cardLabelText.split(" ");
     const labelLines = [];
     let currentLine = "";
     words.forEach(word => {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        if (testLine.length * charWidth > cardInnerWidth && currentLine) {
-            labelLines.push(currentLine);
-            currentLine = word;
-        } else {
-            currentLine = testLine;
-        }
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (testLine.length * charWidth > cardInnerWidth && currentLine) {
+        labelLines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
     });
     if (currentLine) labelLines.push(currentLine);
 
@@ -1230,7 +1193,6 @@ if (totalFactLoss > 0) {
     const cardX = width - paddingRight - cardWidth;
     const cardY = height - paddingBottom - cardHeight;
 
-    // dashed dark-red frame
     const cardRect = document.createElementNS(ns, "rect");
     cardRect.setAttribute("x", cardX);
     cardRect.setAttribute("y", cardY);
@@ -1252,18 +1214,16 @@ if (totalFactLoss > 0) {
     swatch.setAttribute("fill", colorExcessFact);
     svg.appendChild(swatch);
 
-    // label (wrapped lines)
     labelLines.forEach((line, idx) => {
-        const labelText = document.createElementNS(ns, "text");
-        labelText.setAttribute("x", cardX + cardPadding);
-        labelText.setAttribute("y", cardY + cardPadding + cardFontLabel + idx * lineHeight);
-        labelText.setAttribute("font-size", cardFontLabel);
-        labelText.setAttribute("fill", colorExcessFact);
-        labelText.textContent = line;
-        svg.appendChild(labelText);
+      const labelText = document.createElementNS(ns, "text");
+      labelText.setAttribute("x", cardX + cardPadding);
+      labelText.setAttribute("y", cardY + cardPadding + cardFontLabel + idx * lineHeight);
+      labelText.setAttribute("font-size", cardFontLabel);
+      labelText.setAttribute("fill", colorExcessFact);
+      labelText.textContent = line;
+      svg.appendChild(labelText);
     });
 
-    // total value, below the label
     const valueText = document.createElementNS(ns, "text");
     valueText.setAttribute("x", cardX + cardPadding);
     valueText.setAttribute("y", cardY + cardPadding + labelBlockHeight + cardFontValue);
@@ -1285,9 +1245,11 @@ const roCost = new ResizeObserver(() => {
 });
 roCost.observe(costContainer);
 render_cost_overrun_chart(cost_data);
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////// функция для добавления графика по отчету по выполнению и актированию
 /////////////////////////////////////////////////////////////////////////////////////////
+
 function render_act_chart(data, options = {}) {
   const projects = data.projects;
   const svg = document.getElementById("act-chart");
@@ -1302,19 +1264,18 @@ function render_act_chart(data, options = {}) {
     return;
   }
 
-  // ---- colors ----
   const colorAct = proj_colors.ColorPlan2 || "#a9b4c2";
   const colorWIP = proj_colors.ColorFact || "#5b6b84";
   const colorDue = proj_colors.ColorForecast2 || "#8DACCD";
   const colorTxt = "White" || "#228B22";
 
-  // ---- horizontal factors: still width-driven ----
+
   const paddingLeft = clamp(width * 0.01, 8, 16);
   const paddingRight = clamp(width * 0.02, 20, 50);
   const gap_label = clamp(width * 0.4, 50, 80);
   const cornerRadius = clamp(width * 0.008, 3, 4);
 
-  // ---- vertical factors: now height-driven, not width-driven ----
+
   const n = projects.length;
   const legendSize = clamp(height * 0.06, 9, 14);
   const legendRowHeight = legendSize + clamp(height * 0.08, 12, 24);
@@ -1323,13 +1284,12 @@ function render_act_chart(data, options = {}) {
 
   const fontSizeLabel = clamp(Math.min(width, height) * 0.045, 9, 14);
   const fontSizeValue = clamp(Math.min(width, height) * 0.05, 10, 16);
-  // const fontSizeValue = clamp(Math.min(width, height) * 0.05, 10, 16);
 
   const availableRowSpace = height - paddingTop - paddingBottom;
-  const rowGap = availableRowSpace / n;              // total vertical budget per project row
-  const barHeight = clamp(rowGap * 0.55, 14, 40);     // bar thickness is a slice of that budget
-  const barGapY = clamp(rowGap * 0.06, 2, 8);         // (kept for compatibility, unused in single-row layout)
-  const groupGap = rowGap - barHeight;                 // remaining space = gap between rows
+  const rowGap = availableRowSpace / n;             
+  const barHeight = clamp(rowGap * 0.55, 14, 40);     
+  const barGapY = clamp(rowGap * 0.06, 2, 8);         
+  const groupGap = rowGap - barHeight;              
 
   const ns = "http://www.w3.org/2000/svg";
   const plotLeft = paddingLeft + gap_label;
@@ -1343,17 +1303,16 @@ function render_act_chart(data, options = {}) {
   const maxValue = Math.max(...parsed.flatMap(p => p.totalCost || 0));
   const mainMaxWidth = (width - plotLeft - paddingRight);
   const scale = mainMaxWidth / maxValue;
-  const groupHeight = barHeight + barGapY;   // (kept for compatibility; not used to derive height anymore)
+  const groupHeight = barHeight + barGapY;   
 
-  // height is no longer computed here — it IS containerHeight already
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");   // NEW
+  svg.setAttribute("preserveAspectRatio", "none");   
   svg.removeAttribute("width");
   svg.removeAttribute("height");
   svg.innerHTML = "";
 
-  // ---- legend ----
+
   const legendY = (legendRowHeight - legendSize) / 2;
   const legendItems = [
     { color: colorAct, label: "заактировано" },
@@ -1382,9 +1341,9 @@ function render_act_chart(data, options = {}) {
     legendX += legendSize + 5 + item.label.length * fontSizeLabel * 0.76 + 18;
   });
 
-  // ---- rows ----
+
   parsed.forEach((project, i) => {
-    const groupTop = paddingTop + i * rowGap;    // NEW — was i * (groupHeight + groupGap)
+    const groupTop = paddingTop + i * rowGap;   
     const excessStartX = plotLeft + (project.act_sum || 0) * scale;
     let cursorX = excessStartX;
     const actW = project.act_sum * scale;

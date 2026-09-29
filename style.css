@@ -552,15 +552,6 @@ nav a:hover {
   stroke-width: 2;
 }
 
-/*
-.bar {
-  fill: var(--accent);
-  transition: height 0.6s ease, y 0.6s ease, fill 0.15s ease;
-}
-.bar:hover { fill: var(--accent-2); }
-.bar-label { fill: var(--text-muted); font-size: 9px; }
-.bar-value { fill: var(--text); font-size: 10px; font-weight: 600; }
-.axis-line { stroke: var(--border); stroke-width: 1; } */
 
 
 #timeline-svg {
@@ -588,7 +579,6 @@ nav a:hover {
   cursor: pointer;
 }
 
-/* .timeline-node:hover .timeline-dot { fill: var(--accent-2); r: 8; } */
 .timeline-date-label {
   fill: var(--text-muted);
   font-size: 9px;
@@ -687,19 +677,12 @@ nav a:hover {
   margin-bottom: 16px;
 }
 
-/* #region-chart, #trend-chart {
-  width: 100%;
-  max-width: 620px;
-  height: auto;
-  display: block;
-} */
+
 #region-chart,
 #trend-chart {
   width: 100%;
   height: 600px;
-  /* or
-  width: 1200px;
-  height: 700px; */
+
 }
 
 .gantt-filters {
