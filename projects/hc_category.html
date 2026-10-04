@@ -37,8 +37,6 @@
 --GO
 ----Сначала задаем временной диапазон запроса: в данном случае 6 месяцев заканчивая последней датой текущего месяца
 
-
-
 DECLARE @stdt     DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 7, 0); 
 DECLARE @endt     DATE = EOMONTH(GETDATE());
 DECLARE @tomorrow DATE = DATEADD(day, 1, CAST(GETDATE() AS DATE));
