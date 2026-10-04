@@ -32,153 +32,104 @@
 <pre class="sql-block">
     <code class="language-sql">
 ---- топ 150 субподрядчиков по количеству направленных предложений
-DECLARE @tn INT;
-SET @tn=150;
-DECLARE @thrdt DATE
-------set @thrdt='" & thrdt & "';
-SET @thrdt=DATEADD(m, DATEDIFF(m, 0,  GETDATE()) - 5, 0);
+DECLARE @tn INT = 150;
+DECLARE @thrdt DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 5, 0);
+-- сдвиг дат 1С
+DECLARE @thr1c DATETIME2(0) = DATEADD(year, 2000, CAST(@thrdt AS DATETIME2(0)));
 
 ----Документ.бит_стр_ПредложениеПоставщика
-DECLARE @DocList TABLE (Doc VARCHAR(36),offer VARCHAR(36))
+DROP TABLE IF EXISTS #docs;
+SELECT  t._IDRRef         AS doc,
+        t._Fld88874RRef   AS reqKey,
+        t._Fld88894RRef   AS subcontractorKey,
+        t._Fld88876RRef   AS respKey,
+        t._Date_Time      AS dt1c
+INTO    #docs
+FROM    [accbase].[dbo]._Document82388 t
+WHERE   t._Marked = 0x00
+  AND   t._Posted = 0x01
+  AND   t._Date_Time >= @thr1c;
 
-INSERT INTO @DocList
-SELECT DISTINCT
-            convert(varchar(36), _IDRRef, 2) Doc
-            ,convert(varchar(36), _Fld88874RRef, 2) offer FROM [stg83].[dbo]._Document82388
-WHERE
-            convert(varchar(36),[_Marked], 2)='00' ---- не помечен на удаление
-            and convert(varchar(36),[_Posted], 2)='01'---- проведен
-            and (case when year([_Date_Time]) < 3783  then [_Date_Time] else dateadd(year, -2000, [_Date_Time]) end)>=@thrdt
-;
+CREATE CLUSTERED INDEX ix_docs ON #docs (doc);
+CREATE INDEX ix_docs_req ON #docs (reqKey);
 
-IF OBJECT_ID('tempdb.dbo.#stat', 'U') IS NOT NULL
-  DROP TABLE #stat;
-  CREATE TABLE #stat (
-                                                [FKey] VARCHAR(36) NOT NULL PRIMARY KEY
-                                                ,[statusKey] VARCHAR(36) NOT NULL
-                                                ,[status] NVARCHAR(288) NOT NULL
-);
+--- поставщики с принятыми предложениями
+DROP TABLE IF EXISTS #accept;
+SELECT DISTINCT d.subcontractorKey
+INTO   #accept
+FROM   #docs d
+WHERE  EXISTS (SELECT 1
+               FROM [accbase].[dbo]._InfoRg26918 r
+               INNER JOIN [accbase].[dbo]._Reference603 s ON s._IDRRef = r._Fld26918RRef
+               WHERE r._Fld26916_RRRef = d.doc
+                 AND s._Description = N'Утвержден');
 
-INSERT INTO #stat WITH (TABLOCK)
- SELECT  DISTINCT
-                        convert(varchar(36),[_Fld26916_RRRef], 2) FKey
-                        ,convert(varchar(36),[_Fld26918RRef], 2) [statusKey]
-                        ,s._Description [status]
-            FROM
-----РегистрСведений.бит_СтатусыОбъектов
-                        [stg83].[dbo].[_InfoRg26918] d
-----справочник статусов
-                        LEFT JOIN [stg83].[dbo]._Reference603 s 
-                        ON convert(varchar(36),d.[_Fld26918RRef], 2)=convert(varchar(36), s._IDRRef, 2)
-            WHERE
-                        convert(varchar(36),[_Fld26916_RRRef], 2) in (SELECT DISTINCT Doc FROM @DocList)
-;
---Select * from #stat
+CREATE CLUSTERED INDEX ix_accept ON #accept (subcontractorKey);
 
-WITH
-----Документ.бит_стр_ЗапросПредложенийНаЗакупку.РассылкаПредложений
-rs AS
-(SELECT
-                        DISTINCT
-                        convert(varchar(36), _Fld88869RRef, 2) subcontractorKey
-                        ,convert(varchar(36), _Fld88836RRef, 2) respKey
-                        ,convert(varchar(36), _Document82384_IDRRef, 2) request
-                        ,convert(varchar(36), n._Fld88834RRef, 2) entKey
-FROM [stg83].[dbo]._Document82384_VT88863 m
-                        left join [stg83].[dbo]._Document82384 n 
-                        ON convert(varchar(36), m._Document82384_IDRRef, 2)=convert(varchar(36), n._IDRRef, 2)
-            WHERE
-                        convert(varchar(36), _Document82384_IDRRef, 2) IN (SELECT DISTINCT offer FROM @DocList)
-),
----- определяем количество разосланных запросов поставщикам, суммируя по поставщикам и по поставщикам и отвественным менеджерам
-res2 AS
-(SELECT
-                        DISTINCT
-                                    COUNT(rs.request) OVER (partition by rs.subcontractorKey) AS qty_request_subc
-                                    ,COUNT(rs.request) OVER (partition by rs.subcontractorKey, rs.respKey) AS qty_request
-                                    ,rs.subcontractorKey
-                                    ,rs.respKey
-                                    ,rs.entKey
-      FROM   rs
-              ) ,
-
----- Ранжируем, определяя поставщиков с максимальным количеством полученных запросов на закупку
-res_aggr AS
-(
-SELECT
-            DISTINCT
-                        subcontractorKey
-                        ,respKey
-                        ,entKey
-                        ,qty_request_subc
-                        ,qty_request
-                        ,DENSE_RANK() OVER(ORDER BY qty_request_subc DESC) AS 'Dense_Rank'
-FROM res2
-            WHERE qty_request_subc>1
+-- запросы отправленные поставщикам проранжированы
+DROP TABLE IF EXISTS #agg;
+WITH rs AS (
+    SELECT DISTINCT
+           m._Fld88869RRef AS subcontractorKey,
+           m._Fld88836RRef AS respKey,
+           m._Document82384_IDRRef AS request,
+           n._Fld88834RRef AS entKey
+    FROM   [accbase].[dbo]._Document82384_VT88863 m
+    INNER JOIN   [accbase].[dbo]._Document82384 n ON n._IDRRef = m._Document82384_IDRRef
+    WHERE  m._Document82384_IDRRef IN (SELECT reqKey FROM #docs)
 ),
 
----- определяем перечень поставщиков с принятыми предложениями закупки
-accept AS
-(SELECT
-            DISTINCT
-                        convert(varchar(36),_Fld88894RRef, 2) subcontractorKey
-----Документ.бит_стр_ПредложениеПоставщика
-            FROM [stg83].[dbo].[_Document82388] t
-                                    LEFT JOIN #stat s ON convert(varchar(36), t._IDRRef, 2)=s.FKey
-            WHERE
-                                    convert(varchar(36),[_Marked], 2)='00'
-                                    and convert(varchar(36),[_Posted], 2)='01'-- проведен
-                                    and (case when year(t.[_Date_Time]) < 3783  then t.[_Date_Time] 
-                                    else dateadd(year, -2000, t.[_Date_Time]) end)>=@thrdt
-                                    and s.[status]='Утвержден'
+res2 AS (
+    SELECT DISTINCT
+           COUNT(request) OVER (PARTITION BY subcontractorKey) AS qty_request_subc,
+           COUNT(request) OVER (PARTITION BY subcontractorKey, respKey) AS qty_request,
+           subcontractorKey, respKey, entKey
+    FROM   rs
 ),
 
------- детали предложений поставщиков
-offer AS
-(SELECT
-            DISTINCT
-                                    convert(varchar(36),_Fld88894RRef, 2) subcontractorKey
-                                    ,convert(varchar(36), t._IDRRef, 2) offer
-                                    ,case when year(t.[_Date_Time]) < 3783  then t.[_Date_Time] else dateadd(year, -2000, t.[_Date_Time]) end dt
-                                    ,convert(varchar(36),_Fld88876RRef, 2) respKey-- Ответственный
-                                    ,case
-                                    when sum(i._Fld88918)>0 then sum(i.[_Fld88901]*i._Fld88918)
-                                    else
-                                    sum(i.[_Fld88901])
-                                    end as qty --Количество
-                                    ,sum(i.[_Fld88903]) summ --Сумма
-----Документ.бит_стр_ПредложениеПоставщика
-              FROM [stg83].[dbo].[_Document82388] t
-                                    LEFT JOIN #stat s ON convert(varchar(36), t._IDRRef, 2)=s.FKey
-                                    LEFT JOIN [stg83].[dbo].[_Document82388_VT88896] i ON convert(varchar(36), t._IDRRef, 2)=convert(varchar(36), i.[_Document82388_IDRRef], 2)
-            WHERE
-                                    convert(varchar(36),[_Marked], 2)='00' ---- нет пометки на удаление
-                                    and convert(varchar(36),[_Posted], 2)='01'---- проведен
-                                    and (case when year(t.[_Date_Time]) < 3783  then t.[_Date_Time] 
-                                    else dateadd(year, -2000, t.[_Date_Time]) end)>=@thrdt
-            GROUP BY
-                                    convert(varchar(36),_Fld88894RRef, 2)
-                                    ,convert(varchar(36), t._IDRRef, 2)
-                                    ,(case when year(t.[_Date_Time]) < 3783  then t.[_Date_Time] 
-                                    else dateadd(year, -2000, t.[_Date_Time]) end)
-                                    ,convert(varchar(36),_Fld88876RRef, 2)
+ranked AS (
+    SELECT subcontractorKey, respKey, entKey, qty_request_subc, qty_request,
+           DENSE_RANK() OVER (ORDER BY qty_request_subc DESC) AS dr
+    FROM   res2
+    WHERE  qty_request_subc > 1
 )
+SELECT *
+INTO   #agg
+FROM   ranked r
+WHERE  NOT EXISTS (SELECT 1 FROM #accept a WHERE a.subcontractorKey = r.subcontractorKey)
+  AND  r.dr <= @tn;                    
 
------ Детали полученных предложений поставщиков, которые ни разу не выигрывали за рассматриваемый период
-SELECT
-            r.subcontractorKey КлючПоставщика
-            ,r.respKey КлючОтветственного
-            ,r.entKey КлючОрганизации
-            ,qty_request_subc КолвоПредлПоПоставщику
-            ,qty_request КолвоПредлПоПоставщикуИОтветственному
-            , o.offer КлючПредложения
-            , o.dt ДатаПредложения
-            , o.qty КолвоПредложения
-            , o.summ СуммаПредложения
-FROM res_aggr r
-            LEFT JOIN offer o ON r.subcontractorKey=o.subcontractorKey and r.respKey=o.respKey
-WHERE
-            r.subcontractorKey not in (select distinct subcontractorKey from accept)
+CREATE CLUSTERED INDEX ix_agg ON #agg (subcontractorKey, respKey);
+
+-- Детали предложений поставщиков из выборки
+DROP TABLE IF EXISTS #offer;
+SELECT  d.subcontractorKey,
+        d.respKey,
+        d.doc AS offer,
+        d.dt1c,
+        CASE WHEN SUM(i._Fld88918) > 0 THEN SUM(i._Fld88901 * i._Fld88918)
+             ELSE SUM(i._Fld88901) END AS qty,
+        SUM(i._Fld88903) AS summ
+INTO    #offer
+FROM    #docs d
+LEFT JOIN [accbase].[dbo]._Document82388_VT88896 i ON i._Document82388_IDRRef = d.doc
+WHERE   EXISTS (SELECT 1 FROM #agg g WHERE g.subcontractorKey = d.subcontractorKey)
+GROUP BY d.subcontractorKey, d.respKey, d.doc, d.dt1c;
+
+-- Итоговая выборка
+SELECT  CONVERT(varchar(36), r.subcontractorKey, 2) AS КлючПоставщика,
+        CONVERT(varchar(36), r.respKey, 2) AS КлючОтветственного,
+        CONVERT(varchar(36), r.entKey, 2) AS КлючОрганизации,
+        r.qty_request_subc AS КолвоПредлПоПоставщику,
+        r.qty_request AS КолвоПредлПоПоставщикуИОтветственному,
+        CONVERT(varchar(36), o.offer, 2) AS КлючПредложения,
+        DATEADD(year, -2000, o.dt1c) AS ДатаПредложения,
+        o.qty AS КолвоПредложения,
+        o.summ AS СуммаПредложения
+FROM    #agg r
+LEFT JOIN #offer o
+       ON o.subcontractorKey = r.subcontractorKey
+      AND o.respKey = r.respKey;
 ;
 
     </code>
