@@ -101,7 +101,7 @@ WHERE  NOT EXISTS (SELECT 1 FROM #accept a WHERE a.subcontractorKey = r.subcontr
 
 CREATE CLUSTERED INDEX ix_agg ON #agg (subcontractorKey, respKey);
 
--- Детали предложений поставщиков из выборки
+----- Детали полученных предложений поставщиков, которые ни разу не выигрывали за рассматриваемый период
 DROP TABLE IF EXISTS #offer;
 SELECT  d.subcontractorKey,
         d.respKey,
