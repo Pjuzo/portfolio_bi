@@ -39,7 +39,7 @@
 
 
 
-DECLARE @stdt     DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 7, 0);  -- use - 5 for 6 months
+DECLARE @stdt     DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 7, 0); 
 DECLARE @endt     DATE = EOMONTH(GETDATE());
 DECLARE @tomorrow DATE = DATEADD(day, 1, CAST(GETDATE() AS DATE));
 
