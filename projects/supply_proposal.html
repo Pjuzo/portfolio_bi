@@ -31,105 +31,114 @@
 
 <pre class="sql-block">
     <code class="language-sql">
----- топ 150 субподрядчиков по количеству направленных предложений
-DECLARE @tn INT = 150;
-DECLARE @thrdt DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 5, 0);
+---- Поля, таблицы, идентификаторы заменены
+---- топ 180 субподрядчиков по количеству направленных предложений
+DECLARE @tn INT = 180;
+DECLARE @thrdt DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 8, 0);
 -- сдвиг дат 1С
 DECLARE @thr1c DATETIME2(0) = DATEADD(year, 2000, CAST(@thrdt AS DATETIME2(0)));
-
 ----Документ.бит_стр_ПредложениеПоставщика
 DROP TABLE IF EXISTS #docs;
-SELECT  t._IDRRef         AS doc,
-        t._Fld88874RRef   AS reqKey,
-        t._Fld88894RRef   AS subcontractorKey,
-        t._Fld88876RRef   AS respKey,
-        t._Date_Time      AS dt1c
-INTO    #docs
-FROM    [accbase].[dbo]._Document82388 t
-WHERE   t._Marked = 0x00
-  AND   t._Posted = 0x01
-  AND   t._Date_Time >= @thr1c;
+SELECT
+            t._IDRRef AS doc,
+            t._Fld88874RRef AS offerKey,
+            t._Fld88814RRef AS subcontractorKey,
+            t._Fld88876RRef AS respKey,
+            t._Date_Time AS dt1c
+INTO #docs
+FROM [accbase].[dbo]._Document82388 t
+WHERE t._Marked = 0x00
+AND t._Posted = 0x01
+AND t._Date_Time >= @thr1c;
 
 CREATE CLUSTERED INDEX ix_docs ON #docs (doc);
-CREATE INDEX ix_docs_req ON #docs (reqKey);
+CREATE INDEX ix_docs_req ON #docs (offerKey);
 
 --- поставщики с принятыми предложениями
 DROP TABLE IF EXISTS #accept;
 SELECT DISTINCT d.subcontractorKey
-INTO   #accept
-FROM   #docs d
-WHERE  EXISTS (SELECT 1
-               FROM [accbase].[dbo]._InfoRg26918 r
-               INNER JOIN [accbase].[dbo]._Reference603 s ON s._IDRRef = r._Fld26918RRef
-               WHERE r._Fld26916_RRRef = d.doc
-                 AND s._Description = N'Утвержден');
-
+INTO #accept
+FROM #docs d
+WHERE EXISTS (SELECT 1
+FROM accbase.[dbo]._InfoRg26118 r
+INNER JOIN accbase.[dbo]._Reference603 s ON s._IDRRef = r._Fld26118RRef
+WHERE r._Fld26116_RRRef = d.doc
+AND s._Description = N'Утвержден');
 CREATE CLUSTERED INDEX ix_accept ON #accept (subcontractorKey);
 
 -- запросы отправленные поставщикам проранжированы
+
 DROP TABLE IF EXISTS #agg;
 WITH rs AS (
-    SELECT DISTINCT
-           m._Fld88869RRef AS subcontractorKey,
-           m._Fld88836RRef AS respKey,
-           m._Document82384_IDRRef AS request,
-           n._Fld88834RRef AS entKey
-    FROM   [accbase].[dbo]._Document82384_VT88863 m
-    INNER JOIN   [accbase].[dbo]._Document82384 n ON n._IDRRef = m._Document82384_IDRRef
-    WHERE  m._Document82384_IDRRef IN (SELECT reqKey FROM #docs)
+SELECT DISTINCT
+            m._Fld88861RRef AS subcontractorKey,
+            n._Fld88836RRef AS respKey,
+            m._Document82384_IDRRef AS request,
+            n._Fld88834RRef AS entKey
+FROM accbase.[dbo]._Document82384_VT88863 m  --Документ.бит_стр_ЗапросПредложенийНаЗакупку.РассылкаПредложений
+INNER JOIN accbase.[dbo]._Document82384 n ON n._IDRRef = m._Document82384_IDRRef
+WHERE m._Document82384_IDRRef IN (SELECT offerKey FROM #docs)
 ),
 
 res2 AS (
-    SELECT DISTINCT
-           COUNT(request) OVER (PARTITION BY subcontractorKey) AS qty_request_subc,
-           COUNT(request) OVER (PARTITION BY subcontractorKey, respKey) AS qty_request,
-           subcontractorKey, respKey, entKey
-    FROM   rs
+SELECT DISTINCT
+            COUNT(request) OVER (PARTITION BY subcontractorKey) AS qty_request_subc,
+            COUNT(request) OVER (PARTITION BY subcontractorKey, respKey) AS qty_request,
+            subcontractorKey,
+            respKey,
+            entKey
+FROM rs
 ),
-
 ranked AS (
-    SELECT subcontractorKey, respKey, entKey, qty_request_subc, qty_request,
-           DENSE_RANK() OVER (ORDER BY qty_request_subc DESC) AS dr
-    FROM   res2
-    WHERE  qty_request_subc > 1
+SELECT
+            subcontractorKey,
+            respKey,
+            entKey,
+            qty_request_subc,
+            qty_request,
+            DENSE_RANK() OVER (ORDER BY qty_request_subc DESC) AS dr
+FROM res2
+WHERE qty_request_subc > 1
 )
-SELECT *
-INTO   #agg
-FROM   ranked r
-WHERE  NOT EXISTS (SELECT 1 FROM #accept a WHERE a.subcontractorKey = r.subcontractorKey)
-  AND  r.dr <= @tn;                    
 
+SELECT *
+INTO #agg
+FROM ranked r
+WHERE NOT EXISTS (SELECT 1 FROM #accept a WHERE a.subcontractorKey = r.subcontractorKey)
+AND r.dr <= @tn;
 CREATE CLUSTERED INDEX ix_agg ON #agg (subcontractorKey, respKey);
 
 ----- Детали полученных предложений поставщиков, которые ни разу не выигрывали за рассматриваемый период
 DROP TABLE IF EXISTS #offer;
-SELECT  d.subcontractorKey,
-        d.respKey,
-        d.doc AS offer,
-        d.dt1c,
-        CASE WHEN SUM(i._Fld88918) > 0 THEN SUM(i._Fld88901 * i._Fld88918)
-             ELSE SUM(i._Fld88901) END AS qty,
-        SUM(i._Fld88903) AS summ
-INTO    #offer
-FROM    #docs d
-LEFT JOIN [accbase].[dbo]._Document82388_VT88896 i ON i._Document82388_IDRRef = d.doc
-WHERE   EXISTS (SELECT 1 FROM #agg g WHERE g.subcontractorKey = d.subcontractorKey)
+SELECT
+            d.subcontractorKey,
+            d.respKey,
+            d.doc AS offer,
+            d.dt1c,
+            CASE WHEN SUM(i._Fld88118) > 0 THEN SUM(i._Fld88101 * i._Fld88118)
+            ELSE SUM(i._Fld88101) END AS qty,
+            SUM(i._Fld88103) AS summ
+INTO #offer
+            FROM #docs d
+LEFT JOIN [accbase].[dbo].[_Document82388_VT88816] i ON i._Document82388_IDRRef = d.doc
+WHERE EXISTS (SELECT 1 FROM #agg g WHERE g.subcontractorKey = d.subcontractorKey)
 GROUP BY d.subcontractorKey, d.respKey, d.doc, d.dt1c;
 
 -- Итоговая выборка
-SELECT  CONVERT(varchar(36), r.subcontractorKey, 2) AS КлючПоставщика,
-        CONVERT(varchar(36), r.respKey, 2) AS КлючОтветственного,
-        CONVERT(varchar(36), r.entKey, 2) AS КлючОрганизации,
-        r.qty_request_subc AS КолвоПредлПоПоставщику,
-        r.qty_request AS КолвоПредлПоПоставщикуИОтветственному,
-        CONVERT(varchar(36), o.offer, 2) AS КлючПредложения,
-        DATEADD(year, -2000, o.dt1c) AS ДатаПредложения,
-        o.qty AS КолвоПредложения,
-        o.summ AS СуммаПредложения
-FROM    #agg r
+SELECT
+                        CONVERT(varchar(36), r.subcontractorKey, 2) AS КлючПоставщика,
+                        CONVERT(varchar(36), r.respKey, 2) AS КлючОтветственного,
+                        CONVERT(varchar(36), r.entKey, 2) AS КлючОрганизации,
+                        r.qty_request_subc AS КолвоПредлПоПоставщику,
+                        r.qty_request AS КолвоПредлПоПоставщикуИОтветственному,
+                        CONVERT(varchar(36), o.offer, 2) AS КлючПредложения,
+                        DATEADD(year, -2000, o.dt1c) AS ДатаПредложения,
+                        o.qty AS КолвоПредложения,
+                        o.summ AS СуммаПредложения
+FROM #agg r
 LEFT JOIN #offer o
-       ON o.subcontractorKey = r.subcontractorKey
-      AND o.respKey = r.respKey;
+ON o.subcontractorKey = r.subcontractorKey
+AND o.respKey = r.respKey;
 ;
 
     </code>
