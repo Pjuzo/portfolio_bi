@@ -30,19 +30,18 @@
 
 <pre class="sql-block">
     <code class="language-sql">
+
 ---- Запрос для определения явочной численности персонала из данных табельного учета 1С в разбивке по проектам, организациям группы и категориям. Выводится среднее значение в разбивке по месяцам за 6 месяцев. Категории имеют временную привязку к кадровой истории сотрудников
 ---- Все наименования таблиц, полей, параметров выборки - примерные и не соответствуют реальным данным базы 1С.
-
 --SET SHOWPLAN_ALL ON;
 --GO
 ----Сначала задаем временной диапазон запроса: в данном случае 6 месяцев заканчивая последней датой текущего месяца
 
-DECLARE @stdt     DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 7, 0); 
-DECLARE @endt     DATE = EOMONTH(GETDATE());
+DECLARE @stdt DATE = DATEADD(m, DATEDIFF(m, 0, GETDATE()) - 7, 0);
+DECLARE @endt DATE = EOMONTH(GETDATE());
 DECLARE @tomorrow DATE = DATEADD(day, 1, CAST(GETDATE() AS DATE));
-
 -- корректировка дат 1С
-DECLARE @st1c  DATETIME2(0) = DATEADD(year, 2000, CAST(@stdt AS DATETIME2(0)));
+DECLARE @st1c DATETIME2(0) = DATEADD(year, 2000, CAST(@stdt AS DATETIME2(0)));
 DECLARE @end1c DATETIME2(0) = DATEADD(year, 2000, CAST(DATEADD(day, 1, @endt) AS DATETIME2(0)));
 
 ----------------------------------------------------------------
@@ -50,145 +49,175 @@ DECLARE @end1c DATETIME2(0) = DATEADD(year, 2000, CAST(DATEADD(day, 1, @endt) AS
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #ent;
 CREATE TABLE #ent (FKey BINARY(16) NOT NULL PRIMARY KEY, Entity NVARCHAR(255) NOT NULL);
-
 INSERT INTO #ent (FKey, Entity)
-SELECT o._IDRRef, o._Description
-FROM   [zup].[dbo]._Reference169 o
-WHERE  o._IDRRef IN (0x9100007076AD697111E9919AEE90F7DA,
-                     0x9100007076AD697111E99177CEA72E11,
-                     0x90F9007076AD697111E9A73E90BFB1A1);
+SELECT 
+	o._IDRRef, 
+	o._Description
+FROM [zup].[dbo]._Reference165 o
+WHERE o._IDRRef IN (0x50FF005056AD655111E575AB4ECF6067,
+0x5100005056AD655111E5514AEE50F5DA,
+0x5100005056AD655111E55157CEA52E11);
+;
+
 
 ----------------------------------------------------------------
 ---- РегистрНакопления.ДанныеТабельногоУчетаРабочегоВремениСотрудников
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #input;
 SELECT DISTINCT
-       CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
-       t._Fld30169RRef AS emp,
-       t._Fld37092RRef AS org,
-       t._Fld30171RRef AS territory
-INTO   #input
-FROM   [zup].[dbo]._AccumRg30167 t
-WHERE  t._Period >= @st1c AND t._Period < @end1c
-  AND  t._Fld37092RRef IN (SELECT FKey FROM #ent)
-  AND  t._Fld30170RRef IN (0xB27DA0A9CD399B3A11E7BD99EA197E79, 0xB27DA0A9CD399B3A11E7BD99EA197E6A,
-                           0xB933A0A9CD399B3A11E7DFD9669EE6CF, 0x90E9007076AD697111E7C09D99DA73CB,
-                           0x90E9007076AD697111E7C09D99DA73CA);
-  AND t._Active = 0x01  
-
+	CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
+	t._Fld30165RRef AS emp,
+	t._Fld37052RRef AS org,
+	t._Fld30171RRef AS territory
+INTO #input
+FROM [zup].[dbo]._AccumRg30167 t
+WHERE t._Period >= @st1c AND t._Period < @end1c
+AND t._Fld37052RRef IN (SELECT FKey FROM #ent)
+AND t._Fld30170RRef IN (0xB25DA0A5CD354B3A11E7BD54EA147E55, 0x50E055BE5443FC4B11EA7254324F25D0,
+0xB433A0A5CD354B3A11E7DFD4665EE6CF, 0x50E4005056AD655111E7C05D54DA53CB, 0x50E4005056AD655111E7C05D54DA53CA) --явка
+AND t._Active = 0x01
 CREATE CLUSTERED INDEX ix_input ON #input (emp, org, dt);
 
 ----------------------------------------------------------------
 ---- РегистрСведений.КадроваяИсторияСотрудников
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #rec;
-SELECT t._Fld27927RRef AS emp,
-       t._Fld27929RRef AS org,
-       t._Fld27929RRef AS dep,  
-       t._Fld27930RRef AS pos,
-       CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt
-INTO   #rec
-FROM   [zup].[dbo]._InfoRg27929 t
-WHERE  t._Active = 0x01
-  AND  t._Fld27929RRef IN (SELECT FKey FROM #ent)
-  AND  (t._Fld27936 >= @st1c OR t._Fld27936 = '20010101')     
-  AND  EXISTS (SELECT 1 FROM #input i WHERE i.emp = t._Fld27927RRef)
-  ---- РегистрСведений.ВидыЗанятостиСотрудников для фильтра по основной ставке
-  AND  EXISTS (SELECT 1 FROM [zup].[dbo]._InfoRg33179 b      
-               WHERE b._Fld33190RRef = t._Fld27927RRef);
+SELECT 
+	t._Fld25525RRef AS emp,
+	t._Fld25525RRef AS org,
+	t._Fld25525RRef AS dep,
+	t._Fld25530RRef AS pos,
+	CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt
+INTO #rec
+FROM [zup].[dbo]._InfoRg25524 t
+WHERE t._Active = 0x01
+AND t._Fld25525RRef IN (SELECT FKey FROM #ent)
+AND (t._Fld25536 >= @st1c OR t._Fld25536 = '20010101')
+AND EXISTS (SELECT 1 FROM #input i WHERE i.emp = t._Fld25525RRef)
+---- РегистрСведений.ВидыЗанятостиСотрудников для фильтра по основной ставке
+AND EXISTS (SELECT 1 FROM [zup].[dbo]._InfoRg33175 b
+WHERE b._Fld33150RRef = t._Fld25525RRef);
 
 ----------------------------------------------------------------
 ---- Справочник.КатегорииДолжностей
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #cat;
 SELECT DISTINCT
-       t._Fld9990RRef AS dep,
-       t._Fld9991RRef AS pos,
-       CASE c._Description WHEN N'ОПР' THEN N'ОПР+ВРП'
-                           WHEN N'ВРП' THEN N'ОПР+ВРП'
-                           ELSE c._Description END AS categ
-INTO   #cat
-FROM   [zup].[dbo]._Reference393 t
-INNER JOIN [zup].[dbo]._Reference76990 c ON c._IDRRef = t._Fld79327RRef
-WHERE  t._Marked = 0x00 -- нет пометки на удаление
-  AND  t._Fld9991RRef <> 0x00000000000000000000000000000000 ------ ключ должности не пустой
-  AND  c._Description IS NOT NULL
-  AND  t._Fld9997 = 0x00;    ----- не закрыта   
+	t._Fld5440RRef AS dep,
+	t._Fld5441RRef AS pos,
+	CASE c._Description 
+		WHEN N'ОПР' THEN N'ОПР+ВРП'
+		WHEN N'ВРП' THEN N'ОПР+ВРП'
+	ELSE c._Description END AS categ
+INTO #cat
+FROM [zup].[dbo]._Reference353 t
+INNER JOIN [zup].[dbo]._Reference56540 c ON c._IDRRef = t._Fld55325RRef
+WHERE t._Marked = 0x00 -- нет пометки на удаление
+AND t._Fld5441RRef <> 0x00000000000000000000000000000000 ------ ключ должности не пустой
+AND c._Description IS NOT NULL
+AND t._Fld5447 = 0x00 ----- не закрыта
+and t._Fld5445=0x01  --утверждена
+;
 
 CREATE CLUSTERED INDEX ix_cat ON #cat (dep, pos);
 
+
 ----------------------------------------------------------------
------  кадровая история и категории в зависимости от временных промежутков кадровой истории
+----- кадровая история и категории в зависимости от временных промежутков кадровой истории
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #job;
-SELECT r.emp, r.org, r.dep, r.pos, c.categ,
-       r.dt AS datestart,
-       COALESCE(LEAD(r.dt) OVER (PARTITION BY r.emp, r.org ORDER BY r.dt), @tomorrow) AS dateend
-INTO   #job
-FROM   #rec r
+SELECT 
+	r.emp, 
+	r.org, 
+	r.dep, 
+	r.pos, 
+	c.categ,
+	r.dt AS datestart,
+	COALESCE(LEAD(r.dt) OVER (PARTITION BY r.emp, r.org ORDER BY r.dt), @tomorrow) AS dateend
+INTO #job
+FROM #rec r
 INNER JOIN #cat c ON c.pos = r.pos AND c.dep = r.dep
-WHERE  r.dt < @tomorrow;
+WHERE r.dt < @tomorrow;
 
 CREATE CLUSTERED INDEX ix_job ON #job (emp, org, datestart);
 
 ----------------------------------------------------------------
----- присвоение категорий согласно штатному расписанию сотрудникам из табеля учета рабочего времени 
+---- присвоение категорий согласно штатному расписанию сотрудникам из табеля учета рабочего времени
 ---- в зависимости от временных промежутков кадровой истории
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS #rankcat;
-SELECT DISTINCT i.dt, i.emp, i.org, j.dep, j.pos, i.territory, j.categ
-INTO   #rankcat
-FROM   #input i
+SELECT DISTINCT 
+	i.dt, 
+	i.emp, 
+	i.org, 
+	j.dep, 
+	j.pos, 
+	i.territory, 
+	j.categ
+INTO #rankcat
+FROM #input i
 INNER JOIN #job j
-        ON j.emp = i.emp AND j.org = i.org
-       AND i.dt >= j.datestart AND i.dt < j.dateend;
+ON j.emp = i.emp AND j.org = i.org
+AND i.dt >= j.datestart AND i.dt < j.dateend;
+
 
 ----------------------------------------------------------------
 ---- Определение принадлежности к проекту либо по территории выполнения работ либо по принадлежности к подразделению
 ----------------------------------------------------------------
+
 DROP TABLE IF EXISTS #terfin;
-SELECT CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
-       LEAD(CAST(DATEADD(year, -2000, t._Period) AS DATE))
-            OVER (PARTITION BY t._Fld29260RRef ORDER BY t._Period) AS fdt,
-       t._Fld29260RRef AS territory,
-       f._Description  AS fin
-INTO   #terfin
-FROM   [zup].[dbo]._InfoRg29279 t
-LEFT JOIN [zup].[dbo]._Reference301 f ON f._IDRRef = t._Fld29269RRef;
+SELECT 
+	CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
+	LEAD(CAST(DATEADD(year, -2000, t._Period) AS DATE))
+		OVER (PARTITION BY t._Fld24260RRef ORDER BY t._Period) AS fdt,
+	t._Fld24260RRef AS territory,
+	f._Description AS fin
+INTO #terfin
+FROM [zup].[dbo]._InfoRg24255 t
+LEFT JOIN [zup].[dbo]._Reference301 f ON f._IDRRef = t._Fld24264RRef;
 
 CREATE CLUSTERED INDEX ix_terfin ON #terfin (territory, dt);
 
 DROP TABLE IF EXISTS #depfin;
-SELECT CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
-       LEAD(CAST(DATEADD(year, -2000, t._Period) AS DATE))
-            OVER (PARTITION BY t._Fld29226RRef ORDER BY t._Period) AS fdt,
-       t._Fld29226RRef AS dep,
-       f._Description  AS fin
-INTO   #depfin
-FROM   [zup].[dbo]._InfoRg29227 t
-LEFT JOIN [zup].[dbo]._Reference301 f ON f._IDRRef = t._Fld29230RRef;
+SELECT 
+	CAST(DATEADD(year, -2000, t._Period) AS DATE) AS dt,
+	LEAD(CAST(DATEADD(year, -2000, t._Period) AS DATE))
+		OVER (PARTITION BY t._Fld24226RRef ORDER BY t._Period) AS fdt,
+	t._Fld24226RRef AS dep,
+	f._Description AS fin
+INTO #depfin
+FROM [zup].[dbo]._InfoRg24225 t
+LEFT JOIN [zup].[dbo]._Reference301 f ON f._IDRRef = t._Fld24230RRef;
 
 CREATE CLUSTERED INDEX ix_depfin ON #depfin (dep, dt);
+
 
 ----------------------------------------------------------------
 ---- для корректной разбивки среднего по датам подсчитываем количество сотрудников на каждую дату
 ----------------------------------------------------------------
 WITH prelim AS (
-    SELECT s.dt, e.Entity, s.categ,
-           COALESCE(u.fin, d.fin) AS projfin,
-           COUNT(*)               AS qty
-    FROM   #rankcat s
-    LEFT JOIN #ent e     ON e.FKey = s.org
-    LEFT JOIN #terfin u  ON u.territory = s.territory
-                        AND s.dt >= u.dt AND s.dt < COALESCE(u.fdt, '21000101')
-    LEFT JOIN #depfin d  ON d.dep = s.dep
-                        AND s.dt >= d.dt AND s.dt < COALESCE(d.fdt, '21000101')
-    GROUP BY s.dt, e.Entity, s.categ, COALESCE(u.fin, d.fin)
+SELECT 
+	s.dt, 
+	e.Entity, 
+	s.categ,
+	COALESCE(u.fin, d.fin) AS projfin,
+	COUNT(*) AS qty
+FROM #rankcat s
+LEFT JOIN #ent e ON e.FKey = s.org
+LEFT JOIN #terfin u ON u.territory = s.territory
+AND s.dt >= u.dt AND s.dt < COALESCE(u.fdt, '2100-01-01')
+LEFT JOIN #depfin d ON d.dep = s.dep
+AND s.dt >= d.dt AND s.dt < COALESCE(d.fdt, '2100-01-01')
+GROUP BY s.dt, e.Entity, s.categ, COALESCE(u.fin, d.fin)
 )
-SELECT DATEADD(day, 1, EOMONTH(dt, -1)) AS dt,
-       Entity, categ, projfin,
-       AVG(qty) AS avg_qty                      
-FROM   prelim
+
+SELECT 
+	DATEADD(day, 1, EOMONTH(dt, -1)) AS dt,
+	Entity, 
+	categ, 
+	projfin,
+	AVG(qty) AS avg_qty
+FROM prelim
 GROUP BY DATEADD(day, 1, EOMONTH(dt, -1)), Entity, categ, projfin
 ORDER BY categ, projfin, Entity, DATEADD(day, 1, EOMONTH(dt, -1));
 
