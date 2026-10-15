@@ -69,6 +69,16 @@
       "description": "Численность по категориям персонала за 6 месяцев. Категории имеют временную привязку к кадровой истории сотрудников.",
       "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
       "detailUrl": "./projects/hc_category.html"
+    },
+        {
+      "id": "eda-python",
+      "title": "EDA продаж - Jupyter Notebook",
+      "category": "Python",
+      "tools": ["pandas", "numpy", "Matplotlib / Seaborn", "Jupyter Notebook"],
+      "date": "2026-09-10",
+      "description": "Предварительный анализ данных о продажах. Цель: понять основные драйверы выручки, влияет ли удовлетворенность покупателей, соблюдение сроков доставки и пр.",
+      "metrics": { "Churn reduction": "9%", "Accuracy": "0.81 AUC" },
+      "detailUrl": "./projects/notebooks/index.html"
     }
   ],
 
